@@ -67,9 +67,12 @@ async function listAll(prefix) {
   return out;
 }
 
-async function fetchBlobByPathname(pathname) {
-  // get() works for both public and private stores; required for private.
-  const res = await blobGet(pathname, {
+async function fetchBlobByUrl(url) {
+  // Pass the URL returned by list() so the SDK doesn't have to reconstruct it
+  // from `access` + storeId. That reconstruction breaks whenever BLOB_ACCESS
+  // doesn't match the store's actual access type (e.g. private code talking
+  // to a public store), which 404s and surfaces here as a 500.
+  const res = await blobGet(url, {
     access: ACCESS,
     ...(token ? { token } : {}),
   });
@@ -96,7 +99,7 @@ async function findSkillMdBlob(name) {
 }
 
 async function parseSkillMd(blob) {
-  const buf = await fetchBlobByPathname(blob.pathname);
+  const buf = await fetchBlobByUrl(blob.url);
   const raw = buf.toString("utf8");
   const parsed = matter(raw);
   const name = blob.pathname.slice(PREFIX.length).split("/")[0];
@@ -163,7 +166,7 @@ export async function readSkillFile(name, relPath) {
     err.status = 404;
     throw err;
   }
-  return await fetchBlobByPathname(blob.pathname);
+  return await fetchBlobByUrl(blob.url);
 }
 
 export async function saveSkill(name, { description, body, metadata }) {
@@ -208,7 +211,7 @@ export async function exportSkillAsZip(name) {
   const zip = new AdmZip();
   for (const b of blobs) {
     const rel = b.pathname.slice(PREFIX.length + name.length + 1);
-    const data = await fetchBlobByPathname(b.pathname);
+    const data = await fetchBlobByUrl(b.url);
     zip.addFile(`${name}/${rel}`, data);
   }
   return zip.toBuffer();
