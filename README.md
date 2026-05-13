@@ -51,7 +51,7 @@ The repo is configured for Vercel out of the box. Skills are stored in **Vercel 
 
 1. **Push this repo to GitHub** (or use the Vercel CLI from a local checkout).
 2. **Create the project on Vercel.** Import the repo — Vercel auto-detects the `api/` directory and `vercel.json`. No build command, no framework preset.
-3. **Add a Blob store.** Project → *Storage* → *Create Database* → *Blob*. Vercel automatically injects `BLOB_READ_WRITE_TOKEN` as an environment variable, which is all the server needs to switch into Blob mode.
+3. **Add a Blob store.** Project → *Storage* → *Create Database* → *Blob*. Pick **Private** access (recommended — skills shouldn't be world-readable by URL). Vercel automatically injects `BLOB_READ_WRITE_TOKEN` into the project, which is all the server needs to switch into Blob mode. If you instead picked **Public**, also set `BLOB_ACCESS=public` in env vars.
 4. **Set tokens** (Project → *Settings* → *Environment Variables*):
    - `ADMIN_TOKEN` — required to write skills from the UI / REST API.
    - `MCP_TOKEN` — required to call `/mcp`.

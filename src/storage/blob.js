@@ -4,6 +4,7 @@ import {
   put as blobPut,
   list as blobList,
   del as blobDel,
+  get as blobGet,
 } from "@vercel/blob";
 import { assertSafeName, assertSafeRelPath, NAME_RE } from "./shared.js";
 
@@ -18,10 +19,14 @@ const PREFIX = "skills/";
 
 const token = process.env.BLOB_READ_WRITE_TOKEN;
 
+// Match the access type of the Vercel Blob store you connected.
+// Set BLOB_ACCESS=public if you created a public store; otherwise private (the default & recommended).
+const ACCESS = process.env.BLOB_ACCESS === "public" ? "public" : "private";
+
 function opts(extra = {}) {
   // `addRandomSuffix: false` keeps the pathname stable so we can address it by name.
   return {
-    access: "public",
+    access: ACCESS,
     addRandomSuffix: false,
     allowOverwrite: true,
     ...(token ? { token } : {}),
@@ -62,14 +67,25 @@ async function listAll(prefix) {
   return out;
 }
 
-async function fetchBlob(url) {
-  const r = await fetch(url, { cache: "no-store" });
-  if (!r.ok) {
-    const err = new Error(`Failed to fetch blob (${r.status})`);
-    err.status = 502;
+async function fetchBlobByPathname(pathname) {
+  // get() works for both public and private stores; required for private.
+  const res = await blobGet(pathname, {
+    access: ACCESS,
+    ...(token ? { token } : {}),
+  });
+  if (!res || res.statusCode !== 200 || !res.stream) {
+    const err = new Error("Blob not found");
+    err.status = 404;
     throw err;
   }
-  return Buffer.from(await r.arrayBuffer());
+  const reader = res.stream.getReader();
+  const chunks = [];
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    chunks.push(Buffer.from(value));
+  }
+  return Buffer.concat(chunks);
 }
 
 async function findSkillMdBlob(name) {
@@ -80,7 +96,7 @@ async function findSkillMdBlob(name) {
 }
 
 async function parseSkillMd(blob) {
-  const buf = await fetchBlob(blob.url);
+  const buf = await fetchBlobByPathname(blob.pathname);
   const raw = buf.toString("utf8");
   const parsed = matter(raw);
   const name = blob.pathname.slice(PREFIX.length).split("/")[0];
@@ -147,7 +163,7 @@ export async function readSkillFile(name, relPath) {
     err.status = 404;
     throw err;
   }
-  return await fetchBlob(blob.url);
+  return await fetchBlobByPathname(blob.pathname);
 }
 
 export async function saveSkill(name, { description, body, metadata }) {
@@ -192,7 +208,7 @@ export async function exportSkillAsZip(name) {
   const zip = new AdmZip();
   for (const b of blobs) {
     const rel = b.pathname.slice(PREFIX.length + name.length + 1);
-    const data = await fetchBlob(b.url);
+    const data = await fetchBlobByPathname(b.pathname);
     zip.addFile(`${name}/${rel}`, data);
   }
   return zip.toBuffer();
