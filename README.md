@@ -35,6 +35,8 @@ npm start
 # → http://localhost:3000
 ```
 
+Skills persist in `./skills` on disk. The `fs` backend is auto-selected when no Blob token is present.
+
 ### Docker
 
 ```bash
@@ -42,6 +44,47 @@ docker compose up -d
 ```
 
 Skills persist in `./skills` on the host.
+
+### Vercel
+
+The repo is configured for Vercel out of the box. Skills are stored in **Vercel Blob** so they persist across cold starts and serverless instances.
+
+1. **Push this repo to GitHub** (or use the Vercel CLI from a local checkout).
+2. **Create the project on Vercel.** Import the repo — Vercel auto-detects the `api/` directory and `vercel.json`. No build command, no framework preset.
+3. **Add a Blob store.** Project → *Storage* → *Create Database* → *Blob*. Vercel automatically injects `BLOB_READ_WRITE_TOKEN` as an environment variable, which is all the server needs to switch into Blob mode.
+4. **Set tokens** (Project → *Settings* → *Environment Variables*):
+   - `ADMIN_TOKEN` — required to write skills from the UI / REST API.
+   - `MCP_TOKEN` — required to call `/mcp`.
+5. **Deploy.** Once it's live:
+   - UI at `https://<your-deployment>.vercel.app/`
+   - MCP endpoint at `https://<your-deployment>.vercel.app/mcp`
+
+Or from the command line:
+
+```bash
+npm i -g vercel
+vercel link
+vercel env add BLOB_READ_WRITE_TOKEN   # or attach a Blob store in the dashboard
+vercel env add ADMIN_TOKEN
+vercel env add MCP_TOKEN
+vercel deploy --prod
+```
+
+#### How the storage swap works
+
+`src/skills.js` picks a backend at startup:
+
+| Condition | Backend |
+| --- | --- |
+| `STORAGE=blob`, or `BLOB_READ_WRITE_TOKEN` is set (Vercel default) | Vercel Blob (`src/storage/blob.js`) |
+| Otherwise | Local filesystem (`src/storage/fs.js`) |
+
+Both backends implement the same interface, so the REST API, MCP tools, and UI behave identically.
+
+#### Vercel-specific limits to know
+
+- Serverless request bodies are capped at **4.5 MB**. Skill zip imports through the UI use this limit, so keep imported skills small (the file count itself is unconstrained — only the upload payload matters). To import larger skills, run the server locally and use the REST API directly, or upload files into Blob out-of-band.
+- The function has a 30-second `maxDuration`. Listing skills involves one HTTP fetch per `SKILL.md` to read frontmatter — fine for tens or hundreds of skills, slow for thousands. Add a KV index if you get there.
 
 ## Auth
 
@@ -112,10 +155,19 @@ POST   /api/skills/import       # multipart .zip, ?overwrite=1            [admin
 ## Layout
 
 ```
+api/
+  index.js          # Vercel serverless entry (wraps the Express app)
 src/
-  server.js   # Express app, REST API, static UI
-  mcp.js      # MCP server + tool registrations + HTTP transport
-  skills.js   # filesystem storage / import / export
-public/       # UI (vanilla HTML/CSS/JS)
-skills/       # data (gitignored by default)
+  server.js         # Local-dev entry (calls app.listen)
+  app.js            # Express app builder — routes, MCP, UI, auth
+  mcp.js            # MCP server + tool registrations + HTTP transport
+  skills.js         # backend selector + zip import/search
+  storage/
+    fs.js           # filesystem backend
+    blob.js         # Vercel Blob backend
+    shared.js       # name/path validators
+public/             # UI (vanilla HTML/CSS/JS)
+skills/             # local fs data (gitignored by default)
+vercel.json         # rewrites /mcp, /healthz, /api/skills/* → api/index
+Dockerfile          # for Fly.io / Railway / Render / self-host
 ```
