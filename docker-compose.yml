@@ -1,0 +1,15 @@
+services:
+  skill-server:
+    build: .
+    image: skill-server:latest
+    container_name: skill-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Set these to lock the server down once it's exposed publicly.
+      # ADMIN_TOKEN: change-me
+      # MCP_TOKEN: change-me
+      SKILLS_DIR: /data/skills
+    volumes:
+      - ./skills:/data/skills

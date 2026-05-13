@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Skill Server</title>
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>Skill Server</h1>
+    <span class="tagline">Shared skills for your agents</span>
+  </div>
+  <div class="actions">
+    <input id="search" type="search" placeholder="Search skills..." />
+    <button id="new-skill" class="primary">New skill</button>
+    <label class="btn">
+      Import .zip
+      <input id="import-file" type="file" accept=".zip" hidden />
+    </label>
+    <button id="set-token" class="ghost" title="Set admin token">Token</button>
+  </div>
+</header>
+
+<main>
+  <aside id="sidebar">
+    <ul id="skill-list"></ul>
+    <div id="endpoint-box">
+      <h3>MCP endpoint</h3>
+      <code id="mcp-url"></code>
+      <p>Connect any agent (Claude Code, IDE, custom) to this URL using MCP over Streamable HTTP.</p>
+    </div>
+  </aside>
+
+  <section id="editor">
+    <div id="empty-state">
+      <h2>Pick a skill, or create a new one.</h2>
+      <p>Skills follow the SKILL.md format: YAML frontmatter (name, description) plus a markdown body.</p>
+    </div>
+
+    <form id="skill-form" hidden>
+      <div class="row">
+        <label>
+          Name
+          <input id="f-name" required pattern="[a-z0-9][a-z0-9-_]{0,62}" />
+        </label>
+        <label class="grow">
+          Description
+          <input id="f-description" placeholder="One-line summary the agent sees first" />
+        </label>
+      </div>
+      <label>
+        Body (markdown)
+        <textarea id="f-body" rows="22" placeholder="# Skill instructions..."></textarea>
+      </label>
+      <div class="row end">
+        <button type="button" id="f-export" class="ghost">Export .zip</button>
+        <button type="button" id="f-delete" class="danger">Delete</button>
+        <button type="submit" class="primary">Save</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<div id="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>
