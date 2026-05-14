@@ -211,7 +211,13 @@ document.addEventListener("drop", async (e) => {
   dragDepth = 0;
   dragOverlay.classList.remove("drag-active");
   const file = e.dataTransfer.files[0];
-  if (file) await doImport(file);
+  if (!file) return;
+  const name = file.name.toLowerCase();
+  if (!name.endsWith(".md") && !name.endsWith(".zip")) {
+    toast(`Unsupported file type: ${file.name}. Drop a .md or .zip.`, "error");
+    return;
+  }
+  await doImport(file);
 });
 
 $("#set-token").addEventListener("click", () => {
