@@ -88,6 +88,7 @@ async function openSkill(name) {
     $("#f-description").value = s.description || "";
     $("#f-body").value = s.body || "";
     $("#f-delete").hidden = false;
+    $("#f-delete").textContent = "Delete";
     $("#f-export").hidden = false;
     showForm();
     renderList();
@@ -103,7 +104,8 @@ function startNew() {
   $("#f-name").disabled = false;
   $("#f-description").value = "";
   $("#f-body").value = "# New skill\n\nDescribe what this skill does and when an agent should use it.\n";
-  $("#f-delete").hidden = true;
+  $("#f-delete").hidden = false;
+  $("#f-delete").textContent = "Cancel";
   $("#f-export").hidden = true;
   showForm();
   renderList();
@@ -141,6 +143,13 @@ form.addEventListener("submit", async (e) => {
 });
 
 $("#f-delete").addEventListener("click", async () => {
+  if (creating) {
+    creating = false;
+    current = null;
+    showEmpty();
+    renderList();
+    return;
+  }
   if (!current) return;
   if (!confirm(`Delete skill '${current}'? This cannot be undone.`)) return;
   try {
