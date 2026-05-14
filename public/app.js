@@ -162,9 +162,7 @@ $("#f-export").addEventListener("click", () => {
 
 $("#new-skill").addEventListener("click", startNew);
 
-$("#import-file").addEventListener("change", async (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+async function doImport(file) {
   const fd = new FormData();
   fd.append("file", file);
   try {
@@ -183,9 +181,37 @@ $("#import-file").addEventListener("change", async (e) => {
     await openSkill(saved.name);
   } catch (err) {
     toast(`Import failed: ${err.message}`, "error");
-  } finally {
-    e.target.value = "";
   }
+}
+
+$("#import-file").addEventListener("change", async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  await doImport(file);
+  e.target.value = "";
+});
+
+// Drag-and-drop anywhere on the page
+const dragOverlay = $("#drag-overlay");
+let dragDepth = 0;
+
+document.addEventListener("dragenter", (e) => {
+  e.preventDefault();
+  if (++dragDepth === 1) dragOverlay.classList.add("drag-active");
+});
+document.addEventListener("dragleave", () => {
+  if (--dragDepth <= 0) {
+    dragDepth = 0;
+    dragOverlay.classList.remove("drag-active");
+  }
+});
+document.addEventListener("dragover", (e) => e.preventDefault());
+document.addEventListener("drop", async (e) => {
+  e.preventDefault();
+  dragDepth = 0;
+  dragOverlay.classList.remove("drag-active");
+  const file = e.dataTransfer.files[0];
+  if (file) await doImport(file);
 });
 
 $("#set-token").addEventListener("click", () => {

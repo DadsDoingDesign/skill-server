@@ -8,6 +8,7 @@ import {
   saveSkill,
   deleteSkill,
   importSkillFromZip,
+  importSkillFromMarkdown,
   exportSkillAsZip,
   searchSkills,
   describeBackend,
@@ -133,7 +134,10 @@ export function buildApp() {
       try {
         if (!req.file) return res.status(400).json({ error: "No file uploaded" });
         const overwrite = req.query.overwrite === "1" || req.body?.overwrite === "1";
-        const saved = await importSkillFromZip(req.file.buffer, { overwrite });
+        const isMarkdown = req.file.originalname.toLowerCase().endsWith(".md");
+        const saved = isMarkdown
+          ? await importSkillFromMarkdown(req.file.buffer, { overwrite })
+          : await importSkillFromZip(req.file.buffer, { overwrite });
         res.status(201).json(saved);
       } catch (e) {
         next(e);

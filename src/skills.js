@@ -38,6 +38,30 @@ export async function searchSkills(query) {
   );
 }
 
+export async function importSkillFromMarkdown(buffer, { overwrite = false } = {}) {
+  const raw = buffer.toString("utf8");
+  const parsed = matter(raw);
+  const name = typeof parsed.data.name === "string" ? parsed.data.name.trim() : "";
+  if (!name) {
+    const err = new Error("SKILL.md must have a `name` field in its frontmatter");
+    err.status = 400;
+    throw err;
+  }
+  assertSafeName(name);
+  const existing = await getSkill(name);
+  if (existing && !overwrite) {
+    const err = new Error(`Skill '${name}' already exists`);
+    err.status = 409;
+    throw err;
+  }
+  if (existing) await deleteSkill(name);
+  return await saveSkill(name, {
+    description: typeof parsed.data.description === "string" ? parsed.data.description : undefined,
+    body: parsed.content,
+    metadata: parsed.data,
+  });
+}
+
 export async function importSkillFromZip(buffer, { overwrite = false } = {}) {
   const zip = new AdmZip(buffer);
   const entries = zip.getEntries();
