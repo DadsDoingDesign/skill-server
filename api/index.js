@@ -1,13 +1,13 @@
 import { buildApp } from "../src/app.js";
 
-// Build the Express app once per cold start. Vercel's Node runtime invokes
-// the default export as a (req, res) handler, and Express apps are valid
-// handlers because they are themselves functions.
+// Build the Express app once per cold start.
 const app = buildApp();
 
-export const config = {
-  // Express handles body parsing internally; tell Vercel not to.
-  api: { bodyParser: false },
-};
-
-export default app;
+// Vercel's Node Runtime v3 expects a plain default-export handler function.
+// `export const config` is a Next.js-only pattern; using it in a non-Next.js
+// function causes "Invalid export found in module" at cold-start and crashes
+// every request. Vercel does not pre-parse request bodies for plain functions,
+// so Express's own body parsers work without any extra config.
+export default function handler(req, res) {
+  return app(req, res);
+}
