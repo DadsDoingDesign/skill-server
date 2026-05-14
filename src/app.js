@@ -137,7 +137,7 @@ export function buildApp() {
         const fname = req.file.originalname.toLowerCase();
         const isMarkdown = fname.endsWith(".md") || fname.endsWith(".skill");
         const saved = isMarkdown
-          ? await importSkillFromMarkdown(req.file.buffer, { overwrite })
+          ? await importSkillFromMarkdown(req.file.buffer, { overwrite, filename: req.file.originalname })
           : await importSkillFromZip(req.file.buffer, { overwrite });
         res.status(201).json(saved);
       } catch (e) {

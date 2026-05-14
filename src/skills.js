@@ -38,12 +38,14 @@ export async function searchSkills(query) {
   );
 }
 
-export async function importSkillFromMarkdown(buffer, { overwrite = false } = {}) {
+export async function importSkillFromMarkdown(buffer, { overwrite = false, filename = "" } = {}) {
   const raw = buffer.toString("utf8");
   const parsed = matter(raw);
-  const name = typeof parsed.data.name === "string" ? parsed.data.name.trim() : "";
+  const frontmatterName = typeof parsed.data.name === "string" ? parsed.data.name.trim() : "";
+  const fileBaseName = filename ? filename.replace(/\.[^.]+$/, "") : "";
+  const name = frontmatterName || fileBaseName;
   if (!name) {
-    const err = new Error("SKILL.md must have a `name` field in its frontmatter");
+    const err = new Error("Skill must have a `name` field in its frontmatter (or a descriptive filename)");
     err.status = 400;
     throw err;
   }
