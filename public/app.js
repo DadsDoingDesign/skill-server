@@ -213,8 +213,8 @@ document.addEventListener("drop", async (e) => {
   const file = e.dataTransfer.files[0];
   if (!file) return;
   const name = file.name.toLowerCase();
-  if (!name.endsWith(".md") && !name.endsWith(".zip")) {
-    toast(`Unsupported file type: ${file.name}. Drop a .md or .zip.`, "error");
+  if (!name.endsWith(".md") && !name.endsWith(".zip") && !name.endsWith(".skill")) {
+    toast(`Unsupported file type: ${file.name}. Drop a .skill, .md, or .zip.`, "error");
     return;
   }
   await doImport(file);

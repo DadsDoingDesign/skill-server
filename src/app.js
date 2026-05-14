@@ -134,7 +134,8 @@ export function buildApp() {
       try {
         if (!req.file) return res.status(400).json({ error: "No file uploaded" });
         const overwrite = req.query.overwrite === "1" || req.body?.overwrite === "1";
-        const isMarkdown = req.file.originalname.toLowerCase().endsWith(".md");
+        const fname = req.file.originalname.toLowerCase();
+        const isMarkdown = fname.endsWith(".md") || fname.endsWith(".skill");
         const saved = isMarkdown
           ? await importSkillFromMarkdown(req.file.buffer, { overwrite })
           : await importSkillFromZip(req.file.buffer, { overwrite });
