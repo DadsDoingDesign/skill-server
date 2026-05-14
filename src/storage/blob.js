@@ -4,7 +4,6 @@ import {
   put as blobPut,
   list as blobList,
   del as blobDel,
-  get as blobGet,
 } from "@vercel/blob";
 import { assertSafeName, assertSafeRelPath, NAME_RE } from "./shared.js";
 
@@ -68,27 +67,17 @@ async function listAll(prefix) {
 }
 
 async function fetchBlobByUrl(url) {
-  // Pass the URL returned by list() so the SDK doesn't have to reconstruct it
-  // from `access` + storeId. That reconstruction breaks whenever BLOB_ACCESS
-  // doesn't match the store's actual access type (e.g. private code talking
-  // to a public store), which 404s and surfaces here as a 500.
-  const res = await blobGet(url, {
-    access: ACCESS,
-    ...(token ? { token } : {}),
-  });
-  if (!res || res.statusCode !== 200 || !res.stream) {
+  // Direct authenticated fetch — more reliable than the SDK's get() for private
+  // stores because it doesn't reconstruct the URL from storeId+access.
+  const headers = token ? { authorization: `Bearer ${token}` } : {};
+  const response = await fetch(url, { headers });
+  if (!response.ok) {
     const err = new Error("Blob not found");
-    err.status = 404;
+    err.status = response.status === 404 ? 404 : 502;
     throw err;
   }
-  const reader = res.stream.getReader();
-  const chunks = [];
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    chunks.push(Buffer.from(value));
-  }
-  return Buffer.concat(chunks);
+  const buf = await response.arrayBuffer();
+  return Buffer.from(buf);
 }
 
 async function findSkillMdBlob(name) {

@@ -156,8 +156,8 @@ $("#f-delete").addEventListener("click", async () => {
     await api(`/api/skills/${encodeURIComponent(current)}`, { method: "DELETE" });
     toast("Deleted", "ok");
     current = null;
-    showEmpty();
     await loadSkills();
+    showEmpty();
   } catch (err) {
     toast(`Delete failed: ${err.message}`, "error");
   }
