@@ -155,3 +155,9 @@ export function buildApp() {
 
   return app;
 }
+
+// Vercel's Node runtime validates every module in the import chain and
+// requires the default export to be a function or HTTP server. Export the
+// pre-built Express app so this module satisfies that check whether Vercel
+// invokes it directly or only uses it as a dependency of api/index.js.
+export default buildApp();
