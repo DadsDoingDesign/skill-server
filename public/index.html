@@ -1,76 +1,71 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Skill Server</title>
 <link rel="stylesheet" href="/styles.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: ['class', '[data-theme="dark"]'],
+    theme: {
+      extend: {
+        colors: {
+          'surface-page':     'var(--surface-page)',
+          'surface-raised':   'var(--surface-raised)',
+          'surface-sunken':   'var(--surface-sunken)',
+          'surface-edge':     'var(--surface-edge)',
+          'ink-primary':      'var(--ink-primary)',
+          'ink-secondary':    'var(--ink-secondary)',
+          'ink-muted':        'var(--ink-muted)',
+          'ink-inverse':      'var(--ink-inverse)',
+          'accent-mark':      'var(--accent-mark)',
+          'accent-link':      'var(--accent-link)',
+          'feedback-positive':'var(--feedback-positive)',
+          'feedback-negative':'var(--feedback-negative)',
+          'feedback-pending': 'var(--feedback-pending)',
+        },
+        fontFamily: {
+          display: ['var(--font-display)'],
+          body:    ['var(--font-body)'],
+          mono:    ['var(--font-mono)'],
+        },
+        boxShadow: {
+          sheet: 'var(--shadow-sheet)',
+          stack: 'var(--shadow-stack)',
+        },
+        borderRadius: {
+          edge: 'var(--radius-edge)',
+        },
+        maxWidth: {
+          measure: 'var(--measure-text)',
+        },
+      },
+    },
+  };
+</script>
 </head>
-<body>
-<header>
-  <div class="brand">
-    <h1>Skill Server</h1>
-    <span class="tagline">Shared skills for your agents</span>
-  </div>
-  <div class="actions">
-    <input id="search" type="search" placeholder="Search skills..." />
-    <button id="new-skill" class="primary">New skill</button>
-    <label class="btn">
-      Import
-      <input id="import-file" type="file" accept=".zip,.md,.skill" hidden />
-    </label>
-    <button id="set-token" class="ghost" title="Set admin token">Token</button>
-  </div>
-</header>
+<body class="bg-surface-page text-ink-primary font-body min-h-screen">
 
-<main>
-  <aside id="sidebar">
-    <ul id="skill-list"></ul>
-    <div id="endpoint-box">
-      <h3>MCP endpoint</h3>
-      <code id="mcp-url"></code>
-      <p>Connect any agent (Claude Code, IDE, custom) to this URL using MCP over Streamable HTTP.</p>
-    </div>
-  </aside>
+  <header data-mount="header"
+          class="border-b border-surface-edge bg-surface-raised">
+  </header>
 
-  <section id="editor">
-    <div id="empty-state">
-      <h2>Pick a skill, or create a new one.</h2>
-      <p>Skills follow the SKILL.md format: YAML frontmatter (name, description) plus a markdown body.</p>
-    </div>
+  <main class="grid grid-cols-[18rem_1fr] min-h-[calc(100vh-4rem)]">
+    <aside data-mount="sidebar"
+           class="border-r border-surface-edge bg-surface-raised overflow-y-auto">
+    </aside>
+    <section data-mount="content"
+             class="overflow-y-auto">
+    </section>
+  </main>
 
-    <form id="skill-form" hidden>
-      <div class="row">
-        <label>
-          Name
-          <input id="f-name" required pattern="[a-z0-9][a-z0-9-_]{0,62}" />
-        </label>
-        <label class="grow">
-          Description
-          <input id="f-description" placeholder="One-line summary the agent sees first" />
-        </label>
-      </div>
-      <label>
-        Body (markdown)
-        <textarea id="f-body" rows="22" placeholder="# Skill instructions..."></textarea>
-      </label>
-      <div class="row end">
-        <button type="button" id="f-export" class="ghost">Export .zip</button>
-        <button type="button" id="f-delete" class="danger">Delete</button>
-        <button type="submit" class="primary">Save</button>
-      </div>
-    </form>
-  </section>
-</main>
+  <div data-mount="overlay"></div>
+  <div data-mount="dialog"></div>
+  <div data-mount="toast"
+       class="fixed bottom-5 right-5 z-50"></div>
 
-<div id="toast"></div>
-<div id="drag-overlay">
-  <div class="drag-inner">
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <p>Drop to import skill</p>
-    <span>.skill, .md, or .zip</span>
-  </div>
-</div>
-<script src="/app.js"></script>
+  <script type="module" src="/app.js"></script>
 </body>
 </html>
