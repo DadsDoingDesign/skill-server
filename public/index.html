@@ -46,13 +46,13 @@
   };
 </script>
 </head>
-<body class="bg-surface-page text-ink-primary font-body min-h-screen">
+<body class="bg-surface-page text-ink-primary font-body h-screen flex flex-col overflow-hidden">
 
   <header data-mount="header"
-          class="border-b border-surface-edge bg-surface-raised">
+          class="border-b border-surface-edge bg-surface-raised shrink-0 sticky top-0 z-10">
   </header>
 
-  <main class="grid grid-cols-[18rem_1fr] min-h-[calc(100vh-4rem)]">
+  <main class="grid grid-cols-[18rem_1fr] flex-1 overflow-hidden">
     <aside data-mount="sidebar"
            class="border-r border-surface-edge bg-surface-raised overflow-y-auto">
     </aside>
