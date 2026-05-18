@@ -33,9 +33,8 @@ function itemHtml(s, active) {
   const cls = active
     ? "bg-surface-sunken border border-surface-edge"
     : "hover:bg-surface-sunken border border-transparent";
-  const iconCls = active ? "opacity-100" : "opacity-0 group-hover:opacity-100";
   return `
-    <li class="group relative">
+    <li class="skill-item${active ? " skill-item--active" : ""}">
       <a href="#/skill/${encodeURIComponent(s.name)}"
          class="block no-underline rounded-edge px-3 py-2 my-0.5 pr-8 ${cls}">
         <span class="block font-medium text-ink-primary text-sm" data-name></span>
@@ -44,7 +43,7 @@ function itemHtml(s, active) {
       <a href="/api/skills/${encodeURIComponent(s.name)}/export"
          download="${escapeAttr(s.name)}.zip"
          title="Download ${escapeAttr(s.name)}"
-         class="absolute right-2 top-1/2 -translate-y-1/2 ${iconCls} p-1 rounded text-ink-muted hover:text-ink-primary transition-opacity"
+         class="skill-download"
          onclick="event.stopPropagation()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
