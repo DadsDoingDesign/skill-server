@@ -203,31 +203,47 @@ body { -webkit-font-smoothing: antialiased; }
   font-weight: 500;
 }
 
-/* Skill list item with per-item download icon */
+/* Skill list item actions (copy + download) */
 .skill-item {
   position: relative;
 }
-.skill-download {
+.skill-actions {
   position: absolute;
-  right: 8px;
+  right: 6px;
   top: 50%;
   transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
   opacity: 0;
-  transition: opacity 0.15s, color 0.15s;
+  transition: opacity 0.15s;
+}
+.skill-item:hover .skill-actions,
+.skill-item--active .skill-actions {
+  opacity: 1;
+}
+.skill-download,
+.skill-copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 4px;
   border-radius: 4px;
   color: var(--accent-mark);
   line-height: 0;
   text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
 }
-.skill-item:hover .skill-download,
-.skill-item--active .skill-download {
-  opacity: 1;
+.skill-download:hover,
+.skill-copy:hover {
+  opacity: 0.7;
 }
-.skill-download:hover {
-  color: var(--accent-mark);
-  opacity: 0.75;
-}
+.skill-copy .icon-check { display: none; }
+.skill-copy[data-copied] .icon-copy { display: none; }
+.skill-copy[data-copied] .icon-check { display: block; }
 
 /* Sidebar social links */
 .sidebar-socials {
