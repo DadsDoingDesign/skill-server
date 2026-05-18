@@ -158,6 +158,25 @@ body { -webkit-font-smoothing: antialiased; }
   width: min(28rem, calc(100vw - 2rem));
 }
 
+/* Download all button */
+.download-all-btn {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  border-radius: var(--radius-edge);
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  border: 1px solid var(--accent-mark);
+  color: var(--accent-mark);
+  background: transparent;
+  transition: background 0.15s, color 0.15s;
+}
+.download-all-btn:hover {
+  background: var(--accent-mark);
+  color: var(--ink-inverse);
+}
+
 /* Theme toggle group */
 .theme-toggle {
   display: inline-flex;

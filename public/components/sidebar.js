@@ -10,8 +10,7 @@ function html(skills, currentName, search) {
 
   return `
     <div class="p-2 border-b border-surface-edge">
-      <a href="/api/skills/export-all" download="skills.zip"
-         class="block text-center no-underline rounded-edge px-3 py-1.5 text-sm border border-accent-mark text-accent-mark hover:bg-accent-mark hover:text-ink-inverse transition-colors">
+      <a href="/api/skills/export-all" download="skills.zip" class="download-all-btn">
         Download all
       </a>
     </div>
