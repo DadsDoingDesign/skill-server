@@ -15,7 +15,7 @@ function html(skills, currentName, search) {
         Download all
       </a>
     </div>
-    <div class="p-2 border-b border-surface-edge">
+    <div class="p-2">
       <input data-action="search"
              type="search" placeholder="Search skills…"
              value="${escapeAttr(search)}"
