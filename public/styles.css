@@ -182,3 +182,21 @@ body { -webkit-font-smoothing: antialiased; }
 .skill-download:hover {
   color: var(--ink-primary);
 }
+
+/* Sidebar social links */
+.sidebar-socials {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--surface-edge);
+}
+.sidebar-social-link {
+  color: var(--ink-muted);
+  text-decoration: none;
+  line-height: 0;
+  transition: color 0.15s;
+}
+.sidebar-social-link:hover {
+  color: var(--ink-primary);
+}

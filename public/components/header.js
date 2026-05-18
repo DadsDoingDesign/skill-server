@@ -10,7 +10,7 @@ function html({ admin, search, theme }) {
       <a href="#/" data-action="home"
          class="flex items-baseline gap-3 no-underline text-ink-primary">
         <h1 class="font-display text-xl m-0">Skill Server</h1>
-        <span class="text-ink-muted text-xs">A reading library for agent skills</span>
+        <span class="text-ink-muted text-xs">These skills are abstracted to work with most workflows — it's encouraged you add specific context relating to your workflow directly into the skill files.</span>
       </a>
 
       <div class="flex items-center gap-2">
