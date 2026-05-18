@@ -36,10 +36,7 @@ function html({ admin, search, theme }) {
           ${theme === "dark" ? "Light" : "Dark"}
         </button>
 
-        <button data-action="token"
-                class="bg-transparent border border-surface-edge rounded-edge px-3 py-1.5 text-sm">
-          ${admin ? "Sign out" : "Sign in"}
-        </button>
+        <button data-action="token" hidden></button>
       </div>
     </div>
   `;
@@ -86,6 +83,14 @@ export function mountHeader() {
   bind();
   render();
   subscribe(render);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "`" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      const active = document.activeElement;
+      if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
+      e.preventDefault();
+      showTokenDialog();
+    }
+  });
 }
 
 function render() {
