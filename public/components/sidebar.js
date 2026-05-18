@@ -9,11 +9,13 @@ function html(skills, currentName, search) {
     : `<li class="px-4 py-6 text-center text-ink-muted text-sm">No skills yet.</li>`;
 
   return `
-    <div class="p-2 border-b border-surface-edge flex flex-col gap-2">
+    <div class="p-2 border-b border-surface-edge">
       <a href="/api/skills/export-all" download="skills.zip"
          class="block text-center no-underline rounded-edge px-3 py-1.5 text-sm border border-surface-edge bg-surface-sunken hover:border-accent-link text-ink-secondary">
         Download all
       </a>
+    </div>
+    <div class="p-2 border-b border-surface-edge">
       <input data-action="search"
              type="search" placeholder="Search skills…"
              value="${escapeAttr(search)}"
