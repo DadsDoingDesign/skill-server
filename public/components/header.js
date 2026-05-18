@@ -25,11 +25,16 @@ function html({ admin, search, theme }) {
           </label>
         ` : ""}
 
-        <button data-action="theme"
-                title="Toggle theme"
-                class="bg-transparent border border-surface-edge rounded-edge px-3 py-1.5 text-sm">
-          ${theme === "dark" ? "Light" : "Dark"}
-        </button>
+        <div class="theme-toggle" role="group" aria-label="Theme">
+          <button data-action="theme" data-value="light"
+                  class="theme-toggle__opt ${theme === 'light' ? 'theme-toggle__opt--on' : ''}">
+            Light
+          </button>
+          <button data-action="theme" data-value="dark"
+                  class="theme-toggle__opt ${theme === 'dark' ? 'theme-toggle__opt--on' : ''}">
+            Dark
+          </button>
+        </div>
 
         <button data-action="token" hidden></button>
       </div>
@@ -46,7 +51,7 @@ function bind() {
     if (action === "home") return; // anchor handles it
     if (action === "new") { e.preventDefault(); go("new"); }
     if (action === "token") { e.preventDefault(); showTokenDialog(); }
-    if (action === "theme") { e.preventDefault(); toggleTheme(); }
+    if (action === "theme") { e.preventDefault(); toggleTheme(e.target.closest("[data-value]")?.dataset.value); }
   });
 mount.addEventListener("change", async (e) => {
     const t = e.target.closest('[data-action="import"]');
@@ -58,9 +63,9 @@ mount.addEventListener("change", async (e) => {
   });
 }
 
-function toggleTheme() {
+function toggleTheme(value) {
   const { theme } = getState();
-  const next = theme === "dark" ? "light" : "dark";
+  const next = value || (theme === "dark" ? "light" : "dark");
   document.documentElement.setAttribute("data-theme", next);
   localStorage.setItem("theme", next);
   setState({ theme: next });
