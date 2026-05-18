@@ -10,6 +10,7 @@ import {
   importSkillFromZip,
   importSkillFromMarkdown,
   exportSkillAsZip,
+  exportAllSkillsAsZip,
   searchSkills,
   describeBackend,
 } from "./skills.js";
@@ -66,6 +67,17 @@ export function buildApp() {
     try {
       const q = typeof req.query.q === "string" ? req.query.q : "";
       res.json(q ? await searchSkills(q) : await listSkills());
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  app.get("/api/skills/export-all", async (_req, res, next) => {
+    try {
+      const buf = await exportAllSkillsAsZip();
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader("Content-Disposition", 'attachment; filename="skills.zip"');
+      res.send(buf);
     } catch (e) {
       next(e);
     }

@@ -160,6 +160,10 @@ $("#f-export").addEventListener("click", () => {
   window.open(url, "_blank");
 });
 
+$("#download-all").addEventListener("click", () => {
+  window.open("/api/skills/export-all", "_blank");
+});
+
 $("#new-skill").addEventListener("click", startNew);
 
 async function doImport(file) {

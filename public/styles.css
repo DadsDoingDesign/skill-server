@@ -73,6 +73,14 @@ main {
   flex-direction: column;
   overflow: hidden;
 }
+#sidebar-actions {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+#sidebar-actions button {
+  width: 100%;
+  font-size: 13px;
+}
 #skill-list {
   list-style: none;
   margin: 0;
