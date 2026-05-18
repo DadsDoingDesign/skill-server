@@ -14,11 +14,6 @@ function html({ admin, search, theme }) {
       </a>
 
       <div class="flex items-center gap-2">
-        <input data-action="search"
-               type="search" placeholder="Search skills…"
-               value="${escapeAttr(search)}"
-               class="bg-surface-sunken border border-surface-edge rounded-edge px-3 py-1.5 text-sm w-56 outline-none focus:border-accent-link" />
-
         ${admin ? `
           <button data-action="new"
                   class="bg-accent-mark text-ink-inverse border border-accent-mark rounded-edge px-3 py-1.5 text-sm">
@@ -44,8 +39,6 @@ function html({ admin, search, theme }) {
 
 function escapeAttr(s) { return String(s ?? "").replace(/"/g, "&quot;"); }
 
-let searchTimer;
-
 function bind() {
   mount.addEventListener("click", (e) => {
     const action = e.target.closest("[data-action]")?.dataset.action;
@@ -55,13 +48,7 @@ function bind() {
     if (action === "token") { e.preventDefault(); showTokenDialog(); }
     if (action === "theme") { e.preventDefault(); toggleTheme(); }
   });
-  mount.addEventListener("input", (e) => {
-    const t = e.target.closest('[data-action="search"]');
-    if (!t) return;
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => setState({ search: t.value.trim() }), 150);
-  });
-  mount.addEventListener("change", async (e) => {
+mount.addEventListener("change", async (e) => {
     const t = e.target.closest('[data-action="import"]');
     if (!t || !t.files?.[0]) return;
     const file = t.files[0];

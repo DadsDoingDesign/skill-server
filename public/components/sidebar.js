@@ -1,19 +1,23 @@
-import { getState, subscribe } from "../lib/state.js";
+import { getState, setState, subscribe } from "../lib/state.js";
 import { parseHash } from "../lib/router.js";
 
 const mount = document.querySelector('[data-mount="sidebar"]');
 
-function html(skills, currentName) {
+function html(skills, currentName, search) {
   const items = skills.length
     ? skills.map(s => itemHtml(s, s.name === currentName)).join("")
     : `<li class="px-4 py-6 text-center text-ink-muted text-sm">No skills yet.</li>`;
 
   return `
-    <div class="p-2 border-b border-surface-edge">
+    <div class="p-2 border-b border-surface-edge flex flex-col gap-2">
       <a href="/api/skills/export-all" download="skills.zip"
          class="block text-center no-underline rounded-edge px-3 py-1.5 text-sm border border-surface-edge bg-surface-sunken hover:border-accent-link text-ink-secondary">
         Download all
       </a>
+      <input data-action="search"
+             type="search" placeholder="Search skills…"
+             value="${escapeAttr(search)}"
+             class="bg-surface-sunken border border-surface-edge rounded-edge px-3 py-1.5 text-sm w-full outline-none focus:border-accent-link" />
     </div>
     <nav>
       <ul class="list-none m-0 p-2" data-list>
@@ -71,19 +75,37 @@ function itemHtml(s, active) {
 
 function escapeAttr(s) { return String(s ?? "").replace(/"/g, "&quot;"); }
 
+let searchTimer;
+
 export function mountSidebar() {
   render();
   subscribe(render);
   window.addEventListener("hashchange", render);
+  mount.addEventListener("input", (e) => {
+    const t = e.target.closest('[data-action="search"]');
+    if (!t) return;
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => setState({ search: t.value.trim() }), 150);
+  });
 }
 
 function render() {
-  const { skills } = getState();
+  const { skills, search } = getState();
   const route = parseHash();
   const currentName = route.skill || null;
 
+  const active = document.activeElement;
+  const wasSearch = active?.dataset?.action === "search";
+  const caret = wasSearch ? active.selectionStart : null;
+
   mount.classList.add("flex", "flex-col");
-  mount.innerHTML = html(skills, currentName);
+  mount.innerHTML = html(skills, currentName, search);
+
+  if (wasSearch) {
+    const next = mount.querySelector('[data-action="search"]');
+    next?.focus();
+    if (caret != null) next?.setSelectionRange(caret, caret);
+  }
 
   const items = mount.querySelectorAll("[data-list] > li");
   items.forEach((li, i) => {
