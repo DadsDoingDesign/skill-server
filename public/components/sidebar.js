@@ -60,7 +60,7 @@ function itemHtml(s, active) {
         <span class="block text-ink-muted text-xs truncate" data-desc></span>
       </a>
       <div class="skill-actions">
-        <button class="skill-copy" title="Copy skill name" data-skill="${escapeAttr(s.name)}" onclick="event.stopPropagation(); event.preventDefault(); navigator.clipboard.writeText(this.dataset.skill).then(() => { this.dataset.copied='1'; setTimeout(() => delete this.dataset.copied, 1500); })">
+        <button class="skill-copy" title="Copy skill contents" data-skill="${escapeAttr(s.name)}" onclick="event.stopPropagation(); event.preventDefault(); copySkill(this)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-copy">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -86,6 +86,18 @@ function itemHtml(s, active) {
 }
 
 function escapeAttr(s) { return String(s ?? "").replace(/"/g, "&quot;"); }
+
+async function copySkill(btn) {
+  const name = btn.dataset.skill;
+  try {
+    const res = await fetch(`/api/skills/${encodeURIComponent(name)}`);
+    const skill = await res.json();
+    await navigator.clipboard.writeText(skill.raw || skill.body || "");
+    btn.dataset.copied = "1";
+    setTimeout(() => delete btn.dataset.copied, 1500);
+  } catch {}
+}
+window.copySkill = copySkill;
 
 let searchTimer;
 
