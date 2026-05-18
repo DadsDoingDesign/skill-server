@@ -63,6 +63,14 @@ export function buildApp() {
 
   app.all("/mcp", requireMcp, handleMcpRequest);
 
+  app.get("/api/whoami", (req, res) => {
+    if (!ADMIN_TOKEN) return res.json({ admin: true, authRequired: false });
+    const header = req.headers.authorization || "";
+    const bearer = header.startsWith("Bearer ") ? header.slice(7) : null;
+    const token = bearer || req.headers["x-admin-token"] || req.query.token;
+    res.json({ admin: token === ADMIN_TOKEN, authRequired: true });
+  });
+
   app.get("/api/skills", async (req, res, next) => {
     try {
       const q = typeof req.query.q === "string" ? req.query.q : "";
