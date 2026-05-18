@@ -1,0 +1,98 @@
+import { getState, subscribe } from "../lib/state.js";
+import { parseHash } from "../lib/router.js";
+
+const mount = document.querySelector('[data-mount="sidebar"]');
+
+function html(skills, currentName) {
+  const items = skills.length
+    ? skills.map(s => itemHtml(s, s.name === currentName)).join("")
+    : `<li class="px-4 py-6 text-center text-ink-muted text-sm">No skills yet.</li>`;
+
+  return `
+    <div class="p-2 border-b border-surface-edge">
+      <a href="/api/skills/export-all" download="skills.zip"
+         class="block text-center no-underline rounded-edge px-3 py-1.5 text-sm border border-surface-edge bg-surface-sunken hover:border-accent-link text-ink-secondary">
+        Download all
+      </a>
+    </div>
+    <nav>
+      <ul class="list-none m-0 p-2" data-list>
+        ${items}
+      </ul>
+    </nav>
+    <div class="mt-auto border-t border-surface-edge p-4 bg-surface-sunken">
+      <h3 class="m-0 mb-1.5 text-[11px] uppercase tracking-wider text-ink-muted">MCP endpoint</h3>
+      <code data-mcp-url
+            class="block bg-surface-page border border-surface-edge rounded-edge p-2 font-mono text-xs break-all mb-2 text-ink-secondary"></code>
+      <p class="m-0 mb-4 text-xs text-ink-muted">Point any MCP-compatible agent (Claude Code, Cursor, custom) at this URL to access all skills.</p>
+      <div class="sidebar-socials">
+        <a href="https://www.linkedin.com/in/denisdukhvalov/" target="_blank" rel="noopener" title="LinkedIn" class="sidebar-social-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+          </svg>
+        </a>
+        <a href="https://www.denisdukhvalov.com" target="_blank" rel="noopener" title="Portfolio" class="sidebar-social-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+function itemHtml(s, active) {
+  const cls = active
+    ? "bg-surface-sunken border border-surface-edge"
+    : "hover:bg-surface-sunken border border-transparent";
+  return `
+    <li class="skill-item${active ? " skill-item--active" : ""}">
+      <a href="#/skill/${encodeURIComponent(s.name)}"
+         class="block no-underline rounded-edge px-3 py-2 my-0.5 pr-8 ${cls}">
+        <span class="block font-medium text-ink-primary text-sm" data-name></span>
+        <span class="block text-ink-muted text-xs truncate" data-desc></span>
+      </a>
+      <a href="/api/skills/${encodeURIComponent(s.name)}/export"
+         download="${escapeAttr(s.name)}.zip"
+         title="Download ${escapeAttr(s.name)}"
+         class="skill-download"
+         onclick="event.stopPropagation()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 13 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="13"/>
+        </svg>
+      </a>
+    </li>
+  `;
+}
+
+function escapeAttr(s) { return String(s ?? "").replace(/"/g, "&quot;"); }
+
+export function mountSidebar() {
+  render();
+  subscribe(render);
+  window.addEventListener("hashchange", render);
+}
+
+function render() {
+  const { skills } = getState();
+  const route = parseHash();
+  const currentName = route.skill || null;
+
+  mount.classList.add("flex", "flex-col");
+  mount.innerHTML = html(skills, currentName);
+
+  const items = mount.querySelectorAll("[data-list] > li");
+  items.forEach((li, i) => {
+    const s = skills[i];
+    if (!s) return;
+    li.querySelector("[data-name]").textContent = s.name;
+    li.querySelector("[data-desc]").textContent = s.description || "";
+  });
+
+  const code = mount.querySelector("[data-mcp-url]");
+  if (code) code.textContent = `${location.origin}/mcp`;
+}

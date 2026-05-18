@@ -27,6 +27,20 @@ export const saveSkill = (name, payload) => backend.saveSkill(name, payload);
 export const deleteSkill = (name) => backend.deleteSkill(name);
 export const exportSkillAsZip = (name) => backend.exportSkillAsZip(name);
 
+export async function exportAllSkillsAsZip() {
+  const all = await listSkills();
+  const combined = new AdmZip();
+  for (const s of all) {
+    const buf = await exportSkillAsZip(s.name);
+    if (!buf) continue;
+    const zip = new AdmZip(buf);
+    for (const entry of zip.getEntries()) {
+      if (!entry.isDirectory) combined.addFile(entry.entryName, entry.getData());
+    }
+  }
+  return combined.toBuffer();
+}
+
 export async function searchSkills(query) {
   const all = await listSkills();
   if (!query) return all;
