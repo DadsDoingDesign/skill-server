@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Skill Embed Widget — 10 concepts</title>
+<style>
+/* ============================================================
+   Design tokens — mirrored from skill-server/public/styles.css
+   ============================================================ */
+:root{
+  --surface-page:#f7f3ec; --surface-raised:#fbf8f2; --surface-sunken:#efeae0; --surface-edge:#d8d0bf;
+  --ink-primary:#1c1a16; --ink-secondary:#4a4639; --ink-muted:#8a8472; --ink-inverse:#fbf8f2;
+  --accent-mark:#b34a2c; --accent-link:#2a4a7f;
+  --feedback-positive:#4a7a3a; --feedback-negative:#a23a3a; --feedback-pending:#8a6a2a;
+  --shadow-sheet:0 1px 2px rgba(40,30,20,.06),0 4px 12px rgba(40,30,20,.04);
+  --shadow-stack:0 8px 24px rgba(40,30,20,.18);
+  --font-display:ui-serif,Georgia,"Times New Roman",serif;
+  --font-body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Menlo,monospace;
+  --radius-edge:3px;
+}
+[data-theme="dark"]{
+  --surface-page:#1a1411; --surface-raised:#221a15; --surface-sunken:#14100c; --surface-edge:#3a2e25;
+  --ink-primary:#ece4d6; --ink-secondary:#b8aa92; --ink-muted:#7a6e5c; --ink-inverse:#14100c;
+  --accent-mark:#d97a52; --accent-link:#8aa6d9;
+  --feedback-positive:#8aba6f; --feedback-negative:#d97070; --feedback-pending:#c9a35a;
+  --shadow-sheet:0 1px 2px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3);
+  --shadow-stack:0 8px 24px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{margin:0;background:var(--surface-page);color:var(--ink-primary);
+  font-family:var(--font-body);-webkit-font-smoothing:antialiased;line-height:1.5;}
+
+/* ---- page chrome ---- */
+.page{max-width:1200px;margin:0 auto;padding:40px 28px 80px;}
+.pagehead{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;
+  border-bottom:1px solid var(--surface-edge);padding-bottom:22px;margin-bottom:34px;}
+.pagehead h1{font-family:var(--font-display);font-weight:600;font-size:1.9rem;margin:0 0 6px;letter-spacing:-.01em;}
+.pagehead p{margin:0;color:var(--ink-secondary);max-width:62ch;font-size:.95rem;}
+.pagehead code{font-family:var(--font-mono);background:var(--surface-sunken);
+  border:1px solid var(--surface-edge);border-radius:var(--radius-edge);padding:.05em .4em;font-size:.85em;}
+.toggle{display:inline-flex;border:1px solid var(--accent-mark);border-radius:var(--radius-edge);overflow:hidden;flex:none;}
+.toggle button{padding:.4rem .8rem;font:inherit;font-size:.82rem;cursor:pointer;background:transparent;
+  border:none;color:var(--accent-mark);border-right:1px solid var(--accent-mark);}
+.toggle button:last-child{border-right:none;}
+.toggle button[aria-pressed="true"]{background:var(--accent-mark);color:var(--ink-inverse);font-weight:500;}
+
+/* ---- gallery ---- */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:34px 28px;}
+.stage{display:flex;flex-direction:column;gap:12px;}
+.stage__cap{display:flex;align-items:baseline;gap:8px;}
+.stage__num{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-inverse);background:var(--accent-mark);
+  border-radius:var(--radius-edge);padding:.15em .5em;font-weight:600;}
+.stage__title{font-family:var(--font-display);font-size:1.05rem;font-weight:600;}
+.stage__size{margin-left:auto;font-family:var(--font-mono);font-size:.68rem;color:var(--ink-muted);
+  border:1px solid var(--surface-edge);border-radius:var(--radius-edge);padding:.1em .45em;}
+.stage__blurb{font-size:.82rem;color:var(--ink-muted);margin:-4px 0 2px;}
+.stage__canvas{background:var(--surface-page);border:1px dashed var(--surface-edge);border-radius:8px;
+  padding:20px;display:flex;align-items:center;justify-content:center;min-height:172px;}
+
+/* ============================================================
+   Shared widget primitives
+   ============================================================ */
+.ic{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45em;font-family:inherit;
+  font-size:.76rem;line-height:1;padding:.55em .72em;border-radius:var(--radius-edge);cursor:pointer;
+  border:1px solid var(--surface-edge);background:var(--surface-raised);color:var(--ink-secondary);
+  text-decoration:none;transition:background .15s,color .15s,border-color .15s;white-space:nowrap;}
+.btn:hover{border-color:var(--accent-mark);color:var(--accent-mark);}
+.btn--accent{border-color:var(--accent-mark);color:var(--accent-mark);background:transparent;}
+.btn--accent:hover{background:var(--accent-mark);color:var(--ink-inverse);}
+.btn--solid{background:var(--accent-mark);border-color:var(--accent-mark);color:var(--ink-inverse);}
+.btn--solid:hover{filter:brightness(1.06);}
+.btn--icon{padding:.5em;}
+.btn--ghost{background:transparent;border-color:transparent;color:var(--ink-muted);}
+.btn--ghost:hover{color:var(--accent-mark);background:color-mix(in srgb,var(--accent-mark) 10%,transparent);}
+.ic-check{display:none;}
+.copied .ic-copy{display:none;}
+.copied .ic-check{display:inline-block;}
+
+.tile{width:100%;max-width:300px;}
+.t-name{font-family:var(--font-mono);font-size:.9rem;font-weight:600;color:var(--ink-primary);}
+.t-desc{font-size:.82rem;color:var(--ink-secondary);}
+.t-badge{display:inline-block;font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--accent-mark);border:1px solid var(--accent-mark);border-radius:99px;padding:.15em .55em;}
+
+/* ---------- 01 Card (classic) ---------- */
+.c01{background:var(--surface-raised);border:1px solid var(--surface-edge);border-radius:8px;
+  box-shadow:var(--shadow-sheet);padding:16px;display:flex;flex-direction:column;gap:10px;}
+.c01__top{display:flex;align-items:center;justify-content:space-between;}
+.c01__actions{display:flex;gap:6px;margin-top:4px;}
+.c01__actions .btn{flex:1;}
+
+/* ---------- 02 Compact row ---------- */
+.c02{background:var(--surface-raised);border:1px solid var(--surface-edge);border-radius:99px;
+  box-shadow:var(--shadow-sheet);padding:8px 10px 8px 8px;display:flex;align-items:center;gap:12px;}
+.c02__avatar{width:40px;height:40px;border-radius:50%;flex:none;background:color-mix(in srgb,var(--accent-mark) 16%,var(--surface-sunken));
+  color:var(--accent-mark);font-family:var(--font-display);font-weight:600;display:flex;align-items:center;justify-content:center;}
+.c02__txt{min-width:0;flex:1;}
+.c02__txt .t-name{font-size:.82rem;}
+.c02__txt .t-desc{font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.c02__actions{display:flex;gap:2px;}
+
+/* ---------- 03 Terminal / mono ---------- */
+.c03{background:var(--surface-sunken);border:1px solid var(--surface-edge);border-radius:6px;
+  font-family:var(--font-mono);overflow:hidden;}
+.c03__bar{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--surface-edge);}
+.c03__dot{width:9px;height:9px;border-radius:50%;background:var(--surface-edge);}
+.c03__dot:first-child{background:var(--accent-mark);}
+.c03__bar span{margin-left:auto;font-size:.66rem;color:var(--ink-muted);}
+.c03__body{padding:12px;font-size:.78rem;color:var(--ink-secondary);}
+.c03__body .p{color:var(--accent-mark);}
+.c03__body .v{color:var(--ink-primary);}
+.c03__chips{display:flex;gap:6px;padding:0 12px 12px;}
+.c03__chips .btn{font-family:var(--font-mono);font-size:.7rem;}
+
+/* ---------- 04 Ticket / stamp ---------- */
+.c04{position:relative;display:flex;background:var(--surface-raised);border:1px solid var(--surface-edge);
+  border-radius:6px;box-shadow:var(--shadow-sheet);overflow:hidden;}
+.c04__stub{flex:none;width:54px;border-right:2px dashed var(--surface-edge);display:flex;align-items:center;justify-content:center;
+  background:color-mix(in srgb,var(--accent-mark) 8%,transparent);}
+.c04__stamp{width:38px;height:38px;border-radius:50%;border:2px solid var(--accent-mark);color:var(--accent-mark);
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:.6rem;font-weight:700;
+  transform:rotate(-12deg);}
+.c04__body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1;min-width:0;}
+.c04__actions{display:flex;gap:6px;}
+
+/* ---------- 05 Index card ---------- */
+.c05{background:repeating-linear-gradient(var(--surface-raised),var(--surface-raised) 27px,var(--surface-edge) 27px,var(--surface-edge) 28px);
+  background-color:var(--surface-raised);border:1px solid var(--surface-edge);border-radius:4px;box-shadow:var(--shadow-sheet);
+  padding:14px 16px 14px 20px;position:relative;}
+.c05::before{content:"";position:absolute;left:10px;top:0;bottom:0;width:1px;background:var(--accent-mark);opacity:.5;}
+.c05 .t-name{font-family:var(--font-display);font-size:1.05rem;}
+.c05__actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;}
+
+/* ---------- 06 Minimal / borderless ---------- */
+.c06{display:flex;flex-direction:column;gap:6px;padding:6px 2px;}
+.c06 .t-name{font-family:var(--font-display);font-size:1.15rem;font-weight:600;}
+.c06__actions{display:flex;gap:2px;margin-top:6px;margin-left:-6px;}
+
+/* ---------- 07 Accent header bar ---------- */
+.c07{background:var(--surface-raised);border:1px solid var(--surface-edge);border-radius:8px;
+  box-shadow:var(--shadow-sheet);overflow:hidden;}
+.c07__hd{background:var(--accent-mark);color:var(--ink-inverse);padding:10px 14px;display:flex;align-items:center;gap:8px;}
+.c07__hd .t-name{color:var(--ink-inverse);font-size:.85rem;}
+.c07__hd .ic{width:15px;height:15px;}
+.c07__body{padding:12px 14px;display:flex;flex-direction:column;gap:12px;}
+.c07__actions{display:flex;gap:6px;}
+.c07__actions .btn{flex:1;}
+
+/* ---------- 08 Split metadata ---------- */
+.c08{display:grid;grid-template-columns:1fr 116px;background:var(--surface-raised);border:1px solid var(--surface-edge);
+  border-radius:8px;box-shadow:var(--shadow-sheet);overflow:hidden;}
+.c08__main{padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0;}
+.c08__meta{display:flex;flex-direction:column;gap:4px;font-size:.7rem;color:var(--ink-muted);margin-top:2px;}
+.c08__meta b{color:var(--ink-secondary);font-weight:600;}
+.c08__side{background:var(--surface-sunken);border-left:1px solid var(--surface-edge);padding:12px;
+  display:flex;flex-direction:column;gap:6px;justify-content:center;}
+.c08__side .btn{width:100%;}
+
+/* ---------- 09 Avatar / app tile ---------- */
+.c09{background:var(--surface-raised);border:1px solid var(--surface-edge);border-radius:12px;
+  box-shadow:var(--shadow-sheet);padding:16px;display:flex;flex-direction:column;gap:12px;}
+.c09__row{display:flex;gap:12px;align-items:center;}
+.c09__glyph{width:46px;height:46px;border-radius:12px;flex:none;
+  background:linear-gradient(135deg,var(--accent-mark),color-mix(in srgb,var(--accent-mark) 55%,var(--surface-sunken)));
+  color:var(--ink-inverse);font-family:var(--font-display);font-weight:700;font-size:1.2rem;
+  display:flex;align-items:center;justify-content:center;}
+.c09__actions{display:flex;gap:6px;}
+.c09__actions .btn{flex:1;}
+
+/* ---------- 10 Preview / expanded ---------- */
+.c10{background:var(--surface-raised);border:1px solid var(--surface-edge);border-radius:8px;
+  box-shadow:var(--shadow-sheet);overflow:hidden;}
+.c10__hd{padding:12px 14px 0;display:flex;flex-direction:column;gap:6px;}
+.c10__pre{margin:10px 0 0;position:relative;max-height:92px;overflow:hidden;
+  font-family:var(--font-mono);font-size:.7rem;line-height:1.55;color:var(--ink-muted);padding:0 14px;}
+.c10__pre::after{content:"";position:absolute;inset:auto 0 0 0;height:46px;
+  background:linear-gradient(transparent,var(--surface-raised));}
+.c10__pre .k{color:var(--accent-mark);}
+.c10__ft{display:flex;gap:6px;padding:12px 14px;border-top:1px solid var(--surface-edge);background:var(--surface-sunken);}
+.c10__ft .btn{flex:1;}
+
+/* ---- toast ---- */
+.toasts{position:fixed;bottom:20px;right:20px;z-index:50;display:flex;flex-direction:column;gap:8px;}
+.toast{padding:.6rem .9rem;background:var(--surface-raised);border:1px solid var(--surface-edge);
+  border-left:3px solid var(--feedback-positive);border-radius:var(--radius-edge);box-shadow:var(--shadow-stack);
+  color:var(--ink-primary);font-size:.82rem;max-width:22rem;animation:tin .18s ease-out;}
+@keyframes tin{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.foot{margin-top:46px;border-top:1px solid var(--surface-edge);padding-top:18px;color:var(--ink-muted);font-size:.82rem;}
+.foot code{font-family:var(--font-mono);background:var(--surface-sunken);border:1px solid var(--surface-edge);
+  border-radius:var(--radius-edge);padding:.05em .4em;font-size:.9em;}
+</style>
+</head>
+<body>
+
+<!-- icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ic-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="ic-open" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></symbol>
+  <symbol id="ic-mcp" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></symbol>
+  <symbol id="ic-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></symbol>
+</svg>
+
+<div class="page">
+  <header class="pagehead">
+    <div>
+      <h1>Skill Embed Widget</h1>
+      <p>Ten concepts for a Grids tile that embeds one skill from the skill-server.
+         Every concept carries the same four parts — <strong>name + description</strong>,
+         a <strong>Copy</strong> button (full <code>SKILL.md</code> text), an <strong>Open</strong>
+         link to the skill page, and an <strong>MCP</strong> button (copies the
+         <code>claude mcp add</code> command). Built on the skill-server paper/ink tokens.
+         Click any button — they work.</p>
+    </div>
+    <div class="toggle" role="group" aria-label="Theme">
+      <button data-theme-set="light" aria-pressed="true">Light</button>
+      <button data-theme-set="dark" aria-pressed="false">Dark</button>
+    </div>
+  </header>
+
+  <div class="gallery">
+
+    <!-- 01 -->
+    <section class="stage">
+      <div class="stage__cap"><span class="stage__num">01</span><span class="stage__title">Card</span><span class="stage__size">grid 2×2</span></div>
+      <p class="stage__blurb">Classic vertical card. Category badge, equal-weight action row.</p>
+      <div class="stage__canvas">
+        <div class="tile c01">
+          <div class="c01__top"><span class="t-badge">writing</span></div>
+          <div class="t-name">copywriting-eos</div>
+          <div class="t-desc">Copy critique using The Elements of Style by Strunk &amp; White.</div>
+          <div class="c01__actions">
+            <button class="btn" data-act="copy"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg>Copy</button>
+            <a class="btn" data-act="open" href="#"><svg class="ic"><use href="#ic-open"/></svg>Open</a>
+            <button class="btn btn--accent" data-act="mcp"><svg class="ic"><use href="#ic-mcp"/></svg>MCP</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section class="stage">
+      <div class="stage__cap"><span class="stage__num">02</span><span class="stage__title">Compact row</span><span class="stage__size">grid 4×1</span></div>
+      <p class="stage__blurb">Link-in-bio pill. Initial avatar, icon-only actions for tight rows.</p>
+      <div class="stage__canvas">
+        <div class="tile c02" style="max-width:300px">
+          <div class="c02__avatar">C</div>
+          <div class="c02__txt">
+            <div class="t-name">copywriting-eos</div>
+            <div class="t-desc">Copy critique via Strunk &amp; White</div>
+          </div>
+          <div class="c02__actions">
+            <button class="btn btn--ghost btn--icon" data-act="copy" title="Copy text"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg></button>
+            <a class="btn btn--ghost btn--icon" data-act="open" href="#" title="Open"><svg class="ic"><use href="#ic-open"/></svg></a>
+            <button class="btn btn--ghost btn--icon" data-act="mcp" title="MCP" style="color:var(--accent-mark)"><svg class="ic"><use href="#ic-mcp"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section class="stage">
+      <div class="stage__cap"><span class="stage__num">03</span><span class="stage__title">Terminal</span><span class="stage__size">grid 2×2</span></div>
+      <p class="stage__blurb">Monospace, developer-native. Reads like a config the agent loads.</p>
+      <div class="stage__canvas">
+        <div class="tile c03">
+          <div class="c03__bar"><span class="c03__dot"></span><span class="c03__dot"></span><span class="c03__dot"></span><span>skill</span></div>
+          <div class="c03__body">
+            <div><span class="p">name:</span> <span class="v">copywriting-eos</span></div>
+            <div><span class="p">desc:</span> Copy critique using The Elements of Style.</div>
+          </div>
+          <div class="c03__chips">
+            <button class="btn" data-act="copy"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg>copy</button>
+            <a class="btn" data-act="open" href="#"><svg class="ic"><use href="#ic-open"/></svg>open</a>
+            <button class="btn btn--accent" data-act="mcp"><svg class="ic"><use href="#ic-mcp"/></svg>mcp</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section class="stage">
+      <div class="stage__cap"><span class="stage__num">04</span><span class="stage__title">Ticket</span><span class="stage__size">grid 3×1</span></div>
+      <p class="stage__blurb">Paper ticket with perforated stub. MCP framed as a wax stamp.</p>
+      <div class="stage__canvas">
+        <div class="tile c04" style="max-width:300px">
+          <div class="c04__stub"><div class="c04__stamp">MCP</div></div>
+          <div class="c04__body">
+            <div class="t-name">copywriting-eos</div>
+            <div class="t-desc">Copy critique using Strunk &amp; White.</div>
+            <div class="c04__actions">
+              <button class="btn" data-act="copy"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg>Copy</button>
+              <a class="btn" data-act="open" href="#"><svg class="ic"><use href="#ic-open"/></svg>Open</a>
+              <button class="btn btn--accent btn--icon" data-act="mcp" title="Copy MCP command"><svg class="ic"><use href="#ic-mcp"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section class="stage">
+      <div class="stage__cap"><span class="stage__num">05</span><span class="stage__title">Index card</span><span class="stage__size">grid 2×2</span></div>
+      <p class="stage__blurb">Library index card — ruled lines, red margin. Name set in serif.</p>
+      <div class="stage__canvas">
+        <div class="tile c05">
+          <div class="t-name">copywriting-eos</div>
+          <div class="t-desc">Copy critique using The Elements of Style by Strunk &amp; White.</div>
+          <div class="c05__actions">
+            <button class="btn btn--ghost btn--icon" data-act="copy" title="Copy"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg></button>
+            <a class="btn btn--ghost btn--icon" data-act="open" href="#" title="Open"><svg class="ic"><use href="#ic-open"/></svg></a>
+            <button class="btn btn--accent" data-act="mcp"><svg class="ic"><use href="#ic-mcp"/></svg>MCP</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 -->
+    <section class="stage">
+      <div class="stage__cap"><span class="stage__num">06</span><span class="stage__title">Minimal</span><span class="stage__size">grid 2×1</span></div>
+      <p class="stage__blurb">Borderless and quiet. Lets the surrounding grid do the framing.</p>
+      <div class="stage__canvas">
+        <div class="tile c06">
+          <div class="t-name">copywriting-eos</div>
+          <div class="t-desc">Copy critique using The Elements of Style.</div>
+          <div class="c06__actions">
+            <button class="btn btn--ghost btn--icon" data-act="copy" title="Copy"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg></button>
+            <a class="btn btn--ghost btn--icon" data-act="open" href="#" title="Open"><svg class="ic"><use href="#ic-open"/></svg></a>
+            <button class="btn btn--ghost btn--icon" data-act="mcp" title="MCP"><svg class="ic"><use href="#ic-mcp"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 -->
+    <section class="stage">
+      <div class="stage__cap"><span class="stage__num">07</span><span class="stage__title">Header bar</span><span class="stage__size">grid 2×2</span></div>
+      <p class="stage__blurb">Bold accent header carries the name; actions fill the footer.</p>
+      <div class="stage__canvas">
+        <div class="tile c07">
+          <div class="c07__hd"><svg class="ic"><use href="#ic-doc"/></svg><span class="t-name">copywriting-eos</span></div>
+          <div class="c07__body">
+            <div class="t-desc">Copy critique using The Elements of Style by Strunk &amp; White.</div>
+            <div class="c07__actions">
+              <button class="btn" data-act="copy"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg>Copy</button>
+              <a class="btn" data-act="open" href="#"><svg class="ic"><use href="#ic-open"/></svg>Open</a>
+              <button class="btn btn--accent" data-act="mcp"><svg class="ic"><use href="#ic-mcp"/></svg>MCP</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 -->
+    <section class="stage">
+      <div class="stage__cap"><span class="stage__num">08</span><span class="stage__title">Split metadata</span><span class="stage__size">grid 3×2</span></div>
+      <p class="stage__blurb">Content left, dedicated action rail right with metadata.</p>
+      <div class="stage__canvas">
+        <div class="tile c08" style="max-width:300px">
+          <div class="c08__main">
+            <div class="t-name">copywriting-eos</div>
+            <div class="t-desc">Copy critique using Strunk &amp; White.</div>
+            <div class="c08__meta">
+              <span><b>Category</b> · writing</span>
+              <span><b>Files</b> · 3 · <b>Updated</b> Jun 19</span>
+            </div>
+          </div>
+          <div class="c08__side">
+            <button class="btn" data-act="copy"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg>Copy</button>
+            <a class="btn" data-act="open" href="#"><svg class="ic"><use href="#ic-open"/></svg>Open</a>
+            <button class="btn btn--solid" data-act="mcp"><svg class="ic"><use href="#ic-mcp"/></svg>MCP</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 -->
+    <section class="stage">
+      <div class="stage__cap"><span class="stage__num">09</span><span class="stage__title">App tile</span><span class="stage__size">grid 2×2</span></div>
+      <p class="stage__blurb">Icon-forward, app-store feel. Rounded glyph + initials.</p>
+      <div class="stage__canvas">
+        <div class="tile c09">
+          <div class="c09__row">
+            <div class="c09__glyph">Ce</div>
+            <div style="min-width:0">
+              <div class="t-name">copywriting-eos</div>
+              <div class="t-desc">Copy critique · Strunk &amp; White</div>
+            </div>
+          </div>
+          <div class="c09__actions">
+            <button class="btn" data-act="copy"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg>Copy</button>
+            <a class="btn" data-act="open" href="#"><svg class="ic"><use href="#ic-open"/></svg>Open</a>
+            <button class="btn btn--accent" data-act="mcp"><svg class="ic"><use href="#ic-mcp"/></svg>MCP</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="stage">
+      <div class="stage__cap"><span class="stage__num">10</span><span class="stage__title">Preview</span><span class="stage__size">grid 2×3</span></div>
+      <p class="stage__blurb">Shows a faded SKILL.md preview; pinned action footer.</p>
+      <div class="stage__canvas">
+        <div class="tile c10">
+          <div class="c10__hd">
+            <div class="t-name">copywriting-eos</div>
+            <div class="t-desc">Copy critique using The Elements of Style.</div>
+          </div>
+          <pre class="c10__pre"><span class="k">---</span>
+<span class="k">name:</span> copywriting-eos
+<span class="k">description:</span> Copy critique using
+The Elements of Style by Strunk &amp; White
+<span class="k">---</span>
+
+# Copy critique
+Apply the principles of Strunk &amp; White:
+omit needless words, prefer the active…</pre>
+          <div class="c10__ft">
+            <button class="btn" data-act="copy"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg>Copy</button>
+            <a class="btn" data-act="open" href="#"><svg class="ic"><use href="#ic-open"/></svg>Open</a>
+            <button class="btn btn--accent" data-act="mcp"><svg class="ic"><use href="#ic-mcp"/></svg>MCP</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="foot">
+    <p>Sample skill: <code>copywriting-eos</code>. <strong>Copy</strong> writes the full
+    <code>SKILL.md</code> text; <strong>Open</strong> links to
+    <code>{serverUrl}/#/skill/{name}</code>; <strong>MCP</strong> copies
+    <code>claude mcp add --transport http skills {serverUrl}/mcp</code>.
+    Port a concept to a Grids tile with the <code>creating-grids-tiles</code> skill
+    (category <code>embed</code>, actions <code>copyContent</code> / <code>externalUrl</code>).</p>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+// ---- sample skill payload (stand-in for what the tile fetches) ----
+const SERVER = "https://skills.example.com";
+const SKILL  = "copywriting-eos";
+const SAMPLE_TEXT = `---
+name: copywriting-eos
+description: Copy critique using The Elements of Style by Strunk & White
+---
+
+# Copy critique
+Apply the principles of Strunk & White: omit needless words, prefer the
+active voice, keep related words together, and put statements in positive form.`;
+const MCP_CMD = `claude mcp add --transport http skills ${SERVER}/mcp`;
+
+function toast(msg, kind){
+  const box = document.getElementById("toasts");
+  const el = document.createElement("div");
+  el.className = "toast";
+  if (kind === "neg") el.style.borderLeftColor = "var(--feedback-negative)";
+  el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(() => el.remove(), 1900);
+}
+
+async function copy(text){
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      document.execCommand("copy"); ta.remove();
+    }
+    return true;
+  } catch { return false; }
+}
+
+document.addEventListener("click", async (e) => {
+  const t = e.target.closest("[data-act]");
+  if (!t) return;
+  const act = t.dataset.act;
+  if (act === "open") {
+    e.preventDefault();
+    toast(`Would open ${SERVER}/#/skill/${SKILL}`);
+    return;
+  }
+  e.preventDefault();
+  if (act === "copy") {
+    const ok = await copy(SAMPLE_TEXT);
+    toast(ok ? "Skill markdown copied to clipboard" : "Copy failed", ok ? "" : "neg");
+    if (ok) { t.classList.add("copied"); setTimeout(() => t.classList.remove("copied"), 1400); }
+  } else if (act === "mcp") {
+    const ok = await copy(MCP_CMD);
+    toast(ok ? "MCP command copied — claude mcp add …" : "Copy failed", ok ? "" : "neg");
+  }
+});
+
+// ---- theme toggle ----
+document.querySelectorAll("[data-theme-set]").forEach((b) => {
+  b.addEventListener("click", () => {
+    const mode = b.dataset.themeSet;
+    document.documentElement.dataset.theme = mode;
+    document.querySelectorAll("[data-theme-set]").forEach((x) =>
+      x.setAttribute("aria-pressed", String(x.dataset.themeSet === mode)));
+  });
+});
+</script>
+</body>
+</html>
