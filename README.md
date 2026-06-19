@@ -112,6 +112,32 @@ claude mcp add --transport http skills https://your-host.example.com/mcp \
 
 Point it at `https://your-host.example.com/mcp`, transport = **Streamable HTTP**.
 
+## Embed widget
+
+Each skill can be embedded anywhere (a [Grids](https://github.com/Trustybits/grids) tile,
+a portfolio, a docs page) as a small live widget showing the skill **name + description**
+with working **Copy** (full `SKILL.md`), **Open** (skill page), and **MCP** (copies the
+`claude mcp add` command) buttons. The widget reads from this server's public
+`GET /api/skills/:name`, so it stays in sync automatically.
+
+- **Builder** — open `/embed/` in the UI (or the `</>` action on any skill row). Pick a
+  skill, layout (`card` / `compact` / `row`), size, and theme, then copy the ready
+  `<iframe>` snippet.
+- **Widget** — `/embed/skill-widget.html?skill=<name>` is the embeddable page. Params:
+  `skill` (required), `variant` (`card`|`compact`|`row`), `theme` (`auto`|`light`|`dark`),
+  `accent` (hex), `server` (defaults to the widget's own origin).
+
+```html
+<iframe src="https://<your-deployment>/embed/skill-widget.html?skill=my-skill&variant=card&theme=auto"
+        width="340" height="150" frameborder="0" allow="clipboard-write"
+        style="border:0;border-radius:8px"></iframe>
+```
+
+Hosting the widget on this server (the default) means it fetches the API **same-origin**,
+so no CORS is needed even when the iframe is placed on another domain. `allow="clipboard-write"`
+keeps the Copy/MCP buttons working in cross-origin frames. Static design mockups of the
+widget concepts live in [`mockups/`](mockups/).
+
 ## Skill format
 
 Every skill is a folder under `skills/` containing a `SKILL.md` file:

@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Skill embed</title>
+<style>
+:root{
+  --surface-page:#f7f3ec; --surface-raised:#fbf8f2; --surface-sunken:#efeae0; --surface-edge:#d8d0bf;
+  --ink-primary:#1c1a16; --ink-secondary:#4a4639; --ink-muted:#8a8472; --ink-inverse:#fbf8f2;
+  --accent-mark:#b34a2c; --accent-link:#2a4a7f;
+  --feedback-positive:#4a7a3a; --feedback-negative:#a23a3a;
+  --shadow-sheet:0 1px 2px rgba(40,30,20,.06),0 4px 12px rgba(40,30,20,.04);
+  --font-display:ui-serif,Georgia,"Times New Roman",serif;
+  --font-body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Menlo,monospace;
+  --radius-edge:3px;
+}
+[data-theme="dark"]{
+  --surface-page:#1a1411; --surface-raised:#221a15; --surface-sunken:#14100c; --surface-edge:#3a2e25;
+  --ink-primary:#ece4d6; --ink-secondary:#b8aa92; --ink-muted:#7a6e5c; --ink-inverse:#14100c;
+  --accent-mark:#d97a52; --accent-link:#8aa6d9;
+  --feedback-positive:#8aba6f; --feedback-negative:#d97070;
+  --shadow-sheet:0 1px 2px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{margin:0;background:transparent;color:var(--ink-primary);font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;line-height:1.5;}
+#root{height:100%;}
+
+.ic{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45em;font-family:inherit;
+  font-size:.76rem;line-height:1;padding:.55em .72em;border-radius:var(--radius-edge);cursor:pointer;
+  border:1px solid var(--surface-edge);background:var(--surface-raised);color:var(--ink-secondary);
+  text-decoration:none;transition:background .15s,color .15s,border-color .15s;white-space:nowrap;}
+.btn:hover{border-color:var(--accent-mark);color:var(--accent-mark);}
+.btn--accent{border-color:var(--accent-mark);color:var(--accent-mark);background:transparent;}
+.btn--accent:hover{background:var(--accent-mark);color:var(--ink-inverse);}
+.btn--icon{padding:.5em;}
+.btn--ghost{background:transparent;border-color:transparent;color:var(--ink-muted);}
+.btn--ghost:hover{color:var(--accent-mark);background:color-mix(in srgb,var(--accent-mark) 10%,transparent);}
+.btn .ic-check{display:none;}
+.btn.copied .ic-copy{display:none;}
+.btn.copied .ic-check{display:inline-block;}
+
+.t-name{font-family:var(--font-mono);font-size:.9rem;font-weight:600;color:var(--ink-primary);}
+.t-desc{font-size:.82rem;color:var(--ink-secondary);}
+.t-badge{display:inline-block;font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--accent-mark);border:1px solid var(--accent-mark);border-radius:99px;padding:.15em .55em;}
+.clamp1{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.clamp3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+
+/* Card */
+.skw-card{height:100%;background:var(--surface-raised);border:1px solid var(--surface-edge);
+  border-radius:8px;box-shadow:var(--shadow-sheet);padding:14px;display:flex;flex-direction:column;}
+.skw-card__head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.skw-card__head .t-name{font-size:.88rem;}
+.skw-card .t-desc{margin-top:7px;}
+.skw-card__actions{display:flex;gap:6px;margin-top:auto;padding-top:12px;}
+.skw-card__actions .btn{flex:1;}
+
+/* Compact (column) */
+.skw-compact{height:100%;background:var(--surface-raised);border:1px solid var(--surface-edge);
+  border-radius:8px;box-shadow:var(--shadow-sheet);padding:11px 12px;display:flex;flex-direction:column;
+  justify-content:space-between;gap:8px;overflow:hidden;}
+.skw-compact .t-name{font-size:.8rem;}
+.skw-compact .t-desc{font-size:.72rem;margin-top:2px;line-height:1.4;}
+.skw-compact__actions{display:flex;gap:2px;margin-left:-6px;}
+
+/* Row (compact horizontal) */
+.skw-row{height:100%;background:var(--surface-raised);border:1px solid var(--surface-edge);
+  border-radius:8px;box-shadow:var(--shadow-sheet);padding:10px 12px;display:flex;align-items:center;
+  gap:12px;overflow:hidden;}
+.skw-row__txt{min-width:0;flex:1;}
+.skw-row__txt .t-name{font-size:.82rem;}
+.skw-row__txt .t-desc{font-size:.74rem;margin-top:2px;}
+.skw-row__actions{display:flex;gap:2px;flex:none;}
+
+/* States */
+.skw-msg{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;
+  padding:14px;border:1px dashed var(--surface-edge);border-radius:8px;color:var(--ink-muted);
+  font-size:.8rem;background:var(--surface-raised);}
+.skw-msg--err{color:var(--feedback-negative);border-color:var(--feedback-negative);}
+.skel{background:var(--surface-raised);border:1px solid var(--surface-edge);border-radius:8px;
+  height:100%;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.skel i{display:block;background:var(--surface-sunken);border-radius:4px;height:12px;animation:pulse 1.2s ease-in-out infinite;}
+.skel i.w1{width:55%;height:14px;} .skel i.w2{width:90%;} .skel i.w3{width:70%;} .skel i.bar{margin-top:auto;height:30px;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+
+/* Toast */
+.toasts{position:fixed;bottom:8px;left:8px;right:8px;z-index:50;display:flex;flex-direction:column;gap:6px;align-items:center;}
+.toast{padding:.45rem .7rem;background:var(--surface-raised);border:1px solid var(--surface-edge);
+  border-left:3px solid var(--feedback-positive);border-radius:var(--radius-edge);box-shadow:var(--shadow-sheet);
+  color:var(--ink-primary);font-size:.74rem;max-width:100%;animation:tin .18s ease-out;}
+.toast--neg{border-left-color:var(--feedback-negative);}
+@keyframes tin{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ic-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="ic-open" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></symbol>
+  <symbol id="ic-mcp" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></symbol>
+</svg>
+
+<div id="root"><div class="skel"><i class="w1"></i><i class="w2"></i><i class="w3"></i><i class="bar"></i></div></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+const P = new URLSearchParams(location.search);
+const server  = (P.get("server") || location.origin).replace(/\/+$/, "");
+const skill   = (P.get("skill") || "").trim();
+const variant = (P.get("variant") || "card").toLowerCase();   // card | compact | row
+const theme   = (P.get("theme") || "auto").toLowerCase();     // light | dark | auto
+const accent  = P.get("accent");
+const badgeOv = P.get("badge");
+
+// theme
+function applyTheme(){
+  let mode = theme;
+  if (theme === "auto") mode = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  document.documentElement.dataset.theme = mode;
+}
+applyTheme();
+if (theme === "auto" && matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", applyTheme);
+if (accent && /^#?[0-9a-fA-F]{3,8}$/.test(accent)) {
+  document.documentElement.style.setProperty("--accent-mark", accent[0] === "#" ? accent : "#" + accent);
+}
+
+const root = document.getElementById("root");
+let DATA = null;   // { name, description, raw, category }
+
+function esc(s){ return String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+const ICONS = {
+  copy: '<svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg>',
+  open: '<svg class="ic"><use href="#ic-open"/></svg>',
+  mcp:  '<svg class="ic"><use href="#ic-mcp"/></svg>',
+};
+
+function actionsFull(){
+  return `
+    <button class="btn" data-act="copy">${ICONS.copy}Copy</button>
+    <a class="btn" data-act="open" target="_blank" rel="noopener" href="${esc(openUrl())}">${ICONS.open}Open</a>
+    <button class="btn btn--accent" data-act="mcp">${ICONS.mcp}MCP</button>`;
+}
+function actionsIcons(){
+  return `
+    <button class="btn btn--ghost btn--icon" data-act="copy" title="Copy skill text">${ICONS.copy}</button>
+    <a class="btn btn--ghost btn--icon" data-act="open" target="_blank" rel="noopener" href="${esc(openUrl())}" title="Open skill">${ICONS.open}</a>
+    <button class="btn btn--ghost btn--icon" data-act="mcp" title="Copy MCP command" style="color:var(--accent-mark)">${ICONS.mcp}</button>`;
+}
+
+function openUrl(){ return `${server}/#/skill/${encodeURIComponent(DATA?.name || skill)}`; }
+function mcpCmd(){ return `claude mcp add --transport http skills ${server}/mcp`; }
+
+function render(){
+  const name = esc(DATA.name);
+  const desc = esc(DATA.description || "");
+  const cat  = esc(badgeOv != null ? badgeOv : (DATA.category || ""));
+  const badge = cat ? `<span class="t-badge">${cat}</span>` : "";
+
+  if (variant === "compact") {
+    root.innerHTML = `
+      <div class="skw-compact">
+        <div class="skw-compact__txt">
+          <div class="t-name clamp1">${name}</div>
+          <div class="t-desc clamp2">${desc}</div>
+        </div>
+        <div class="skw-compact__actions">${actionsIcons()}</div>
+      </div>`;
+  } else if (variant === "row") {
+    root.innerHTML = `
+      <div class="skw-row">
+        <div class="skw-row__txt">
+          <div class="t-name clamp1">${name}</div>
+          <div class="t-desc clamp2">${desc}</div>
+        </div>
+        <div class="skw-row__actions">${actionsIcons()}</div>
+      </div>`;
+  } else {
+    root.innerHTML = `
+      <div class="skw-card">
+        <div class="skw-card__head"><span class="t-name clamp1">${name}</span>${badge}</div>
+        <div class="t-desc clamp3">${desc}</div>
+        <div class="skw-card__actions">${actionsFull()}</div>
+      </div>`;
+  }
+  postHeight();
+}
+
+function showMsg(text, isErr){
+  root.innerHTML = `<div class="skw-msg${isErr ? " skw-msg--err" : ""}">${esc(text)}</div>`;
+  postHeight();
+}
+
+function postHeight(){
+  try { parent.postMessage({ type: "skill-widget:height", height: document.body.scrollHeight }, "*"); } catch {}
+}
+
+// ---- actions ----
+function toast(msg, neg){
+  const box = document.getElementById("toasts");
+  const el = document.createElement("div");
+  el.className = "toast" + (neg ? " toast--neg" : "");
+  el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(() => el.remove(), 1800);
+}
+async function copy(text){
+  try {
+    if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); }
+    else {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove();
+    }
+    return true;
+  } catch { return false; }
+}
+document.addEventListener("click", async (e) => {
+  const t = e.target.closest("[data-act]");
+  if (!t || !DATA) return;
+  const act = t.dataset.act;
+  if (act === "open") return; // real anchor, let it open
+  e.preventDefault();
+  if (act === "copy") {
+    const ok = await copy(DATA.raw || "");
+    toast(ok ? "Skill copied" : "Copy blocked — allow clipboard", !ok);
+    if (ok) { t.classList.add("copied"); setTimeout(() => t.classList.remove("copied"), 1300); }
+  } else if (act === "mcp") {
+    const ok = await copy(mcpCmd());
+    toast(ok ? "MCP command copied" : "Copy blocked — allow clipboard", !ok);
+  }
+});
+
+// ---- load ----
+(async () => {
+  if (!skill) return showMsg("No skill specified. Add ?skill=<name> to the URL.", true);
+  try {
+    const res = await fetch(`${server}/api/skills/${encodeURIComponent(skill)}`, { headers: { Accept: "application/json" } });
+    if (res.status === 404) return showMsg(`Skill “${skill}” not found.`, true);
+    if (!res.ok) return showMsg(`Couldn’t load skill (${res.status}).`, true);
+    const s = await res.json();
+    DATA = {
+      name: s.name || skill,
+      description: s.description || s.metadata?.description || "",
+      raw: s.raw || s.body || "",
+      category: s.metadata?.category || "",
+    };
+    render();
+  } catch {
+    showMsg("Couldn’t reach the skill server.", true);
+  }
+})();
+</script>
+</body>
+</html>

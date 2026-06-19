@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Embed a skill</title>
+<style>
+:root{
+  --surface-page:#f7f3ec; --surface-raised:#fbf8f2; --surface-sunken:#efeae0; --surface-edge:#d8d0bf;
+  --ink-primary:#1c1a16; --ink-secondary:#4a4639; --ink-muted:#8a8472; --ink-inverse:#fbf8f2;
+  --accent-mark:#b34a2c; --accent-link:#2a4a7f; --feedback-positive:#4a7a3a; --feedback-negative:#a23a3a;
+  --shadow-sheet:0 1px 2px rgba(40,30,20,.06),0 4px 12px rgba(40,30,20,.04);
+  --shadow-stack:0 8px 24px rgba(40,30,20,.18);
+  --font-display:ui-serif,Georgia,"Times New Roman",serif;
+  --font-body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Menlo,monospace;
+  --radius-edge:3px;
+}
+[data-theme="dark"]{
+  --surface-page:#1a1411; --surface-raised:#221a15; --surface-sunken:#14100c; --surface-edge:#3a2e25;
+  --ink-primary:#ece4d6; --ink-secondary:#b8aa92; --ink-muted:#7a6e5c; --ink-inverse:#14100c;
+  --accent-mark:#d97a52; --accent-link:#8aa6d9; --feedback-positive:#8aba6f; --feedback-negative:#d97070;
+  --shadow-sheet:0 1px 2px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--surface-page);color:var(--ink-primary);font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;line-height:1.5;}
+.page{max-width:980px;margin:0 auto;padding:34px 24px 70px;}
+h1{font-family:var(--font-display);font-weight:600;font-size:1.7rem;margin:0 0 4px;}
+.sub{margin:0 0 26px;color:var(--ink-secondary);font-size:.92rem;max-width:64ch;}
+.sub code{font-family:var(--font-mono);background:var(--surface-sunken);border:1px solid var(--surface-edge);
+  border-radius:var(--radius-edge);padding:.05em .4em;font-size:.85em;}
+.grid{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:start;}
+@media(max-width:760px){.grid{grid-template-columns:1fr;}}
+
+.panel{background:var(--surface-raised);border:1px solid var(--surface-edge);border-radius:8px;
+  box-shadow:var(--shadow-sheet);padding:16px;display:flex;flex-direction:column;gap:16px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field > label{font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-muted);font-weight:600;}
+select,input[type=text]{font:inherit;font-size:.86rem;padding:.5em .6em;background:var(--surface-sunken);
+  color:var(--ink-primary);border:1px solid var(--surface-edge);border-radius:var(--radius-edge);outline:none;width:100%;}
+select:focus,input:focus{border-color:var(--accent-link);}
+.seg{display:flex;border:1px solid var(--surface-edge);border-radius:var(--radius-edge);overflow:hidden;}
+.seg button{flex:1;padding:.45em .3em;font:inherit;font-size:.78rem;background:transparent;border:none;
+  border-right:1px solid var(--surface-edge);color:var(--ink-secondary);cursor:pointer;}
+.seg button:last-child{border-right:none;}
+.seg button[aria-pressed="true"]{background:var(--accent-mark);color:var(--ink-inverse);font-weight:500;}
+.accent-row{display:flex;gap:8px;align-items:center;}
+.accent-row input[type=color]{width:34px;height:34px;border:1px solid var(--surface-edge);border-radius:var(--radius-edge);background:none;padding:2px;cursor:pointer;}
+
+.preview-wrap{display:flex;flex-direction:column;gap:16px;}
+.stage{background:var(--surface-page);background-image:
+  linear-gradient(45deg,var(--surface-sunken) 25%,transparent 25%),
+  linear-gradient(-45deg,var(--surface-sunken) 25%,transparent 25%),
+  linear-gradient(45deg,transparent 75%,var(--surface-sunken) 75%),
+  linear-gradient(-45deg,transparent 75%,var(--surface-sunken) 75%);
+  background-size:18px 18px;background-position:0 0,0 9px,9px -9px,-9px 0;
+  border:1px solid var(--surface-edge);border-radius:10px;padding:26px;display:flex;align-items:center;justify-content:center;min-height:240px;}
+.stage iframe{border:0;border-radius:8px;box-shadow:var(--shadow-stack);background:transparent;}
+
+.out{display:flex;flex-direction:column;gap:6px;}
+.out label{font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-muted);font-weight:600;
+  display:flex;justify-content:space-between;align-items:center;}
+.out .copy{font-size:.72rem;color:var(--accent-mark);background:none;border:1px solid var(--accent-mark);
+  border-radius:var(--radius-edge);padding:.2em .6em;cursor:pointer;font-family:inherit;text-transform:none;letter-spacing:0;}
+.out .copy:hover{background:var(--accent-mark);color:var(--ink-inverse);}
+textarea,.url{font-family:var(--font-mono);font-size:.76rem;background:var(--surface-sunken);color:var(--ink-secondary);
+  border:1px solid var(--surface-edge);border-radius:var(--radius-edge);padding:10px;width:100%;resize:vertical;}
+textarea{min-height:96px;line-height:1.5;}
+.url{white-space:nowrap;overflow-x:auto;}
+.note{font-size:.78rem;color:var(--ink-muted);margin-top:2px;}
+.note a{color:var(--accent-link);}
+.toasts{position:fixed;bottom:18px;right:18px;display:flex;flex-direction:column;gap:8px;z-index:50;}
+.toast{padding:.55rem .85rem;background:var(--surface-raised);border:1px solid var(--surface-edge);
+  border-left:3px solid var(--feedback-positive);border-radius:var(--radius-edge);box-shadow:var(--shadow-stack);font-size:.8rem;}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <div>
+      <h1>Embed a skill</h1>
+      <p class="sub">Generate a live, embeddable widget for any skill on this server — name + description with
+        working <strong>Copy</strong>, <strong>Open</strong>, and <strong>MCP</strong> buttons. Drop the snippet
+        into a Grids <code>embed</code> tile or any page. The widget reads from this server's
+        <code>/api/skills</code>, so it stays in sync automatically.</p>
+    </div>
+    <div class="seg" style="flex:none;width:150px" id="pageTheme">
+      <button data-pt="light" aria-pressed="true">Light</button>
+      <button data-pt="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Controls -->
+    <div class="panel">
+      <div class="field">
+        <label for="skill">Skill</label>
+        <select id="skill"><option>Loading…</option></select>
+      </div>
+      <div class="field">
+        <label>Layout</label>
+        <div class="seg" id="variant">
+          <button data-v="card" aria-pressed="true">Card</button>
+          <button data-v="compact" aria-pressed="false">Compact</button>
+          <button data-v="row" aria-pressed="false">Row</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Size <span style="font-weight:400;text-transform:none;letter-spacing:0">(grid cells)</span></label>
+        <div class="seg" id="size">
+          <button data-s="1x1" aria-pressed="false">1×1</button>
+          <button data-s="2x1" aria-pressed="true">2×1</button>
+          <button data-s="2x2" aria-pressed="false">2×2</button>
+          <button data-s="3x1" aria-pressed="false">3×1</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Theme</label>
+        <div class="seg" id="theme">
+          <button data-t="auto" aria-pressed="true">Auto</button>
+          <button data-t="light" aria-pressed="false">Light</button>
+          <button data-t="dark" aria-pressed="false">Dark</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Accent <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <div class="accent-row">
+          <input type="color" id="accent" value="#b34a2c" />
+          <label style="font-size:.78rem;color:var(--ink-secondary);text-transform:none;letter-spacing:0;display:flex;gap:6px;align-items:center;font-weight:400">
+            <input type="checkbox" id="accentOn" /> override
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview + output -->
+    <div class="preview-wrap">
+      <div class="stage"><iframe id="preview" src="about:blank" allow="clipboard-write"></iframe></div>
+
+      <div class="out">
+        <label>Embed snippet (iframe)
+          <button class="copy" data-copy="snippet">Copy</button>
+        </label>
+        <textarea id="snippet" readonly spellcheck="false"></textarea>
+      </div>
+
+      <div class="out">
+        <label>Widget URL
+          <button class="copy" data-copy="url">Copy</button>
+        </label>
+        <div class="url" id="url"></div>
+      </div>
+
+      <p class="note">Tip: <code>allow="clipboard-write"</code> lets the Copy/MCP buttons work when the widget is
+        embedded cross-origin. Embedding from a different domain than this server requires CORS on
+        <code>/api/skills</code> — hosting the widget on this server (the default) avoids that.</p>
+    </div>
+  </div>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+const ORIGIN = location.origin;
+const WIDGET = `${ORIGIN}/embed/skill-widget.html`;
+const SIZES = { "1x1":[170,170], "2x1":[340,150], "2x2":[340,320], "3x1":[500,150] };
+const DEFAULT_SIZE = { card:"2x1", compact:"1x1", row:"2x1" };
+
+const state = { skill:"", variant:"card", size:"2x1", theme:"auto", accent:null };
+
+function seg(id, key, after){
+  const box = document.getElementById(id);
+  box.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    [...box.children].forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    state[key] = b.dataset[Object.keys(b.dataset)[0]];
+    after && after();
+    update();
+  });
+}
+function setSeg(id, val){
+  const box = document.getElementById(id);
+  [...box.children].forEach(x => x.setAttribute("aria-pressed", String(Object.values(x.dataset)[0] === val)));
+}
+
+seg("variant","variant", () => { state.size = DEFAULT_SIZE[state.variant]; setSeg("size", state.size); });
+seg("size","size");
+seg("theme","theme");
+
+document.getElementById("skill").addEventListener("change", e => { state.skill = e.target.value; update(); });
+document.getElementById("accentOn").addEventListener("change", update);
+document.getElementById("accent").addEventListener("input", update);
+
+function accentHex(){
+  if (!document.getElementById("accentOn").checked) return null;
+  return document.getElementById("accent").value;
+}
+
+function widgetUrl(){
+  const p = new URLSearchParams({ skill: state.skill, variant: state.variant, theme: state.theme });
+  const a = accentHex(); if (a) p.set("accent", a.replace("#",""));
+  return `${WIDGET}?${p.toString()}`;
+}
+function snippet(){
+  const [w,h] = SIZES[state.size];
+  return `<iframe\n  src="${widgetUrl()}"\n  width="${w}" height="${h}" loading="lazy"\n  frameborder="0" allow="clipboard-write"\n  style="border:0;border-radius:8px;max-width:100%"\n  title="Skill: ${state.skill}"></iframe>`;
+}
+function update(){
+  if (!state.skill) return;
+  const [w,h] = SIZES[state.size];
+  const pv = document.getElementById("preview");
+  pv.style.width = w + "px"; pv.style.height = h + "px";
+  pv.src = widgetUrl();
+  document.getElementById("snippet").value = snippet();
+  document.getElementById("url").textContent = widgetUrl();
+}
+
+// copy buttons
+function toast(m){ const b=document.getElementById("toasts"); const e=document.createElement("div"); e.className="toast"; e.textContent=m; b.appendChild(e); setTimeout(()=>e.remove(),1700); }
+async function copy(text){ try{ if(navigator.clipboard&&isSecureContext){await navigator.clipboard.writeText(text);} else { const t=document.createElement("textarea"); t.value=text; t.style.position="fixed"; t.style.opacity="0"; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); } return true; }catch{ return false; } }
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-copy]"); if (!b) return;
+  const text = b.dataset.copy === "url" ? widgetUrl() : snippet();
+  toast(await copy(text) ? (b.dataset.copy === "url" ? "URL copied" : "Snippet copied") : "Copy failed");
+});
+
+// page theme toggle
+document.getElementById("pageTheme").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  document.documentElement.dataset.theme = b.dataset.pt;
+  [...e.currentTarget.children].forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+});
+
+// load skills
+(async () => {
+  const sel = document.getElementById("skill");
+  try {
+    const res = await fetch(`${ORIGIN}/api/skills`, { headers: { Accept: "application/json" } });
+    const list = await res.json();
+    if (!Array.isArray(list) || !list.length) { sel.innerHTML = `<option value="">No skills found</option>`; return; }
+    sel.innerHTML = list.map(s => `<option value="${s.name}">${s.name}</option>`).join("");
+    const pre = new URLSearchParams(location.search).get("skill");
+    state.skill = (pre && list.some(s => s.name === pre)) ? pre : list[0].name;
+    sel.value = state.skill;
+    update();
+  } catch {
+    sel.innerHTML = `<option value="">Couldn’t load skills</option>`;
+  }
+})();
+</script>
+</body>
+</html>
