@@ -34,7 +34,8 @@ export enum ContentType {
 Add the interface (anywhere among the other `*Content` interfaces):
 
 ```ts
-export type SkillEmbedVariant = "card" | "compact" | "row";
+// "auto" picks the layout from the tile's grid size; the others force one.
+export type SkillEmbedVariant = "auto" | "card" | "compact" | "row";
 
 export interface SkillEmbedContent extends TileContent {
   type: ContentType.SKILL_EMBED;
@@ -80,9 +81,12 @@ export { skillEmbedDefinition };
 
 ## Notes / decisions
 
-- **Category `embed`**, default size **2×2** (`card` looks best at 2×1+; `compact`
-  works at 1×1; `row` at 2×1). Color theming (`backgroundColor`) is enabled and
-  overrides the card surface.
+- **Responsive layout.** With `variant: "auto"` (the default) the tile reads its
+  grid footprint (`gridTileW`/`gridTileH`) and picks the layout to match the resize
+  presets: **1×1 → compact**, **3×1 (wide/short) → row**, **2×2 / 4×4 → card** (the
+  card's description grows with height). Setting `variant` to `card`/`compact`/`row`
+  forces one. Category `embed`, default size **2×2**; color theming
+  (`backgroundColor`) is enabled.
 - **Paste-to-create**: `matchUrl`/`parseUrl` recognise a skill page URL
   (`https://host/#/skill/<name>`) so pasting one spawns a configured tile.
 - **`copyContent` is synchronous** in the grids contract, so the component caches

@@ -182,13 +182,13 @@ block for Copy/Open so they also surface in the host toolbar.
 ```ts
 export enum ContentType { SKILL_EMBED = "skill_embed" }
 
-export type SkillEmbedVariant = "card" | "compact" | "row";
+export type SkillEmbedVariant = "auto" | "card" | "compact" | "row";
 
 export interface SkillEmbedContent extends TileContent {
   type: ContentType.SKILL_EMBED;
   serverUrl: string;          // e.g. https://skills.example.com
   skillName: string;          // e.g. copywriting-eos
-  variant: SkillEmbedVariant; // visual layout, see mockups/skill-embed-widget.html
+  variant: SkillEmbedVariant; // "auto" = responsive to grid size (default)
   cachedName?: string;        // cached for instant render; refreshed on mount
   cachedDescription?: string;
   cachedCategory?: string;

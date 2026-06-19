@@ -34,7 +34,7 @@ export const skillEmbedDefinition: TileDefinition<SkillEmbedContent> = {
     type: ContentType.SKILL_EMBED,
     serverUrl: trimUrl(data?.serverUrl || ""),
     skillName: (data?.skillName || "").trim(),
-    variant: data?.variant || "card",
+    variant: data?.variant || "auto",
     cachedName: data?.cachedName,
     cachedDescription: data?.cachedDescription,
     cachedCategory: data?.cachedCategory,

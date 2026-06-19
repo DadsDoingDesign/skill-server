@@ -17,6 +17,7 @@
       <label class="se-field">
         <span>Layout</span>
         <select v-model="draft.variant">
+          <option value="auto">Auto (responsive)</option>
           <option value="card">Card</option>
           <option value="compact">Compact</option>
           <option value="row">Row</option>
@@ -41,13 +42,13 @@
     </div>
 
     <!-- Card -->
-    <div v-else-if="variant === 'card'" class="se-card">
+    <div v-else-if="layout === 'card'" class="se-card">
       <div class="se-card__head">
         <span class="se-name se-clamp1">{{ name }}</span>
         <span v-if="category" class="se-badge">{{ category }}</span>
         <button v-if="canEdit" class="se-edit" title="Configure" @click="openEditor">✎</button>
       </div>
-      <div class="se-desc se-clamp3">{{ description }}</div>
+      <div class="se-desc se-clamp3" :style="{ WebkitLineClamp: descLines }">{{ description }}</div>
       <div class="se-actions">
         <button class="se-btn" @click="onCopy"><span v-html="ic.copy"></span>Copy</button>
         <button class="se-btn" @click="onOpen"><span v-html="ic.open"></span>Open</button>
@@ -56,7 +57,7 @@
     </div>
 
     <!-- Compact (column) -->
-    <div v-else-if="variant === 'compact'" class="se-compact">
+    <div v-else-if="layout === 'compact'" class="se-compact">
       <div class="se-compact__txt">
         <div class="se-name se-clamp1">{{ name }}</div>
         <div class="se-desc se-clamp2">{{ description }}</div>
@@ -89,7 +90,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, ref, computed, onMounted, watch } from "vue";
+import { defineComponent, inject, ref, computed, onMounted, watch, type ComputedRef } from "vue";
 import type { SkillEmbedContent } from "@grids/contracts/types";
 import { useGridStore } from "@/stores/grid";
 import { cacheSkillRaw } from "@/registries/tiles/skillEmbed";
@@ -122,13 +123,33 @@ export default defineComponent({
     const draft = ref({
       serverUrl: props.content.serverUrl || "",
       skillName: props.content.skillName || "",
-      variant: props.content.variant || "card",
+      variant: props.content.variant || "auto",
     });
 
     const canEdit = computed(() => gridStore.canEdit);
     const isConfigured = computed(() => !!props.content.serverUrl && !!props.content.skillName);
     const base = computed(() => trimUrl(props.content.serverUrl));
-    const variant = computed(() => props.content.variant || "card");
+
+    // Grid footprint in cells (provided by the tile shell) — drives the
+    // responsive layout when variant is "auto".
+    const gridTileW = inject<ComputedRef<number> | null>("gridTileW", null);
+    const gridTileH = inject<ComputedRef<number> | null>("gridTileH", null);
+
+    const variantSetting = computed(() => props.content.variant || "auto");
+    const layout = computed(() => {
+      if (variantSetting.value !== "auto") return variantSetting.value;
+      const w = gridTileW?.value ?? 2;
+      const h = gridTileH?.value ?? 2;
+      if (w <= 1 && h <= 1) return "compact"; // 1×1
+      if (h <= 1) return "row";               // wide & short (e.g. 3×1)
+      if (w <= 1) return "compact";           // narrow & tall (e.g. 1×2)
+      return "card";                          // 2×2, 4×4, …
+    });
+    // Card description grows with tile height.
+    const descLines = computed(() => {
+      const h = gridTileH?.value ?? 2;
+      return h <= 2 ? 3 : h <= 4 ? 6 : 10;
+    });
 
     const name = computed(
       () => fetched.value?.name ?? props.content.cachedName ?? props.content.skillName ?? "",
@@ -240,7 +261,7 @@ export default defineComponent({
       draft.value = {
         serverUrl: props.content.serverUrl || "",
         skillName: props.content.skillName || "",
-        variant: props.content.variant || "card",
+        variant: props.content.variant || "auto",
       };
       editing.value = true;
     }
@@ -266,7 +287,8 @@ export default defineComponent({
       name,
       description,
       category,
-      variant,
+      layout,
+      descLines,
       onCopy,
       onOpen,
       onMcp,
