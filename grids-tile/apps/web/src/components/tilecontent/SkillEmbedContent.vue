@@ -43,6 +43,11 @@
 
     <!-- Card -->
     <div v-else-if="layout === 'card'" class="se-card">
+      <svg class="se-bg" viewBox="0 0 120 140" fill="none" aria-hidden="true">
+        <path class="se-bg-stroke" d="M30 12 H76 L98 34 V122 a6 6 0 0 1 -6 6 H30 a6 6 0 0 1 -6 -6 V18 a6 6 0 0 1 6 -6 Z" />
+        <path class="se-bg-accent" d="M76 12 V34 H98" />
+        <path class="se-bg-stroke" d="M42 64 H80 M42 80 H80 M42 96 H68" />
+      </svg>
       <div class="se-card__head">
         <span class="se-name se-clamp1">{{ name }}</span>
         <span v-if="category" class="se-badge">{{ category }}</span>
@@ -389,7 +394,22 @@ export default defineComponent({
 .se-edit:hover { color: var(--se-accent); }
 
 /* Layouts — the outer surface/border come from the tile shell */
-.se-card { height: 100%; padding: var(--spacing-md, 16px); display: flex; flex-direction: column; }
+.se-card { position: relative; overflow: hidden; height: 100%; padding: var(--spacing-md, 16px); display: flex; flex-direction: column; }
+.se-card > *:not(.se-bg) { position: relative; z-index: 1; }
+
+/* Decorative document graphic — themed to the grid (text color + accent fold) */
+.se-bg {
+  position: absolute;
+  right: -6%;
+  bottom: -12%;
+  width: 62%;
+  max-width: 170px;
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+.se-bg-stroke { stroke: var(--se-ink); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.se-bg-accent { stroke: var(--se-accent); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
 .se-card__head { display: flex; align-items: center; gap: var(--spacing-sm, 8px); }
 .se-card .se-desc { margin-top: 7px; }
 .se-card .se-actions { display: flex; gap: 6px; margin-top: auto; padding-top: var(--spacing-sm, 8px); }

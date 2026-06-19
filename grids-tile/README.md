@@ -102,6 +102,9 @@ export { skillEmbedDefinition };
   accent, `--spacing-*`, `--radius-*`, `--font-family-base` / `--font-family-mono`,
   with `color-mix` for muted tones (the same pattern `TextContent.vue` uses). It
   follows light/dark automatically and falls back gracefully outside grids.
+- **Decorative background.** The card layout shows a faint line-art document
+  graphic (text color + accent fold) bleeding off the bottom-right, like other
+  grid tiles. It uses the grid's tokens, so it themes with everything else.
 - Authoring guidance for any grids tile lives in the `creating-grids-tiles` skill
   on the skill-server.
 ```
