@@ -1,5 +1,5 @@
 <template>
-  <div class="se" :style="rootStyle">
+  <div class="se">
     <!-- Config form: when editable and unconfigured, or explicitly editing -->
     <form
       v-if="canEdit && (editing || !isConfigured)"
@@ -147,10 +147,6 @@ export default defineComponent({
     );
     const mcpCmd = computed(() => `claude mcp add --transport http skills ${base.value}/mcp`);
 
-    const rootStyle = computed(() =>
-      props.content.backgroundColor ? { background: props.content.backgroundColor } : {},
-    );
-
     async function load() {
       if (!isConfigured.value) {
         state.value = "unconfigured";
@@ -271,7 +267,6 @@ export default defineComponent({
       description,
       category,
       variant,
-      rootStyle,
       onCopy,
       onOpen,
       onMcp,
@@ -283,42 +278,39 @@ export default defineComponent({
 </script>
 
 <style scoped>
+/* Inherits the host grid's design tokens; the tile shell draws the outer
+   surface/border and sets --tile-text-color. Fallbacks keep it usable
+   outside grids too. */
 .se {
-  --se-surface: #fbf8f2;
-  --se-edge: #d8d0bf;
-  --se-ink: #1c1a16;
-  --se-ink2: #4a4639;
-  --se-muted: #8a8472;
-  --se-accent: #b34a2c;
-  --se-inverse: #fbf8f2;
+  --se-ink: var(--tile-text-color, var(--color-text-primary, currentColor));
+  --se-muted: color-mix(in srgb, var(--se-ink) 60%, transparent);
+  --se-faint: color-mix(in srgb, var(--se-ink) 18%, transparent);
+  --se-accent: var(--primary-color, #009688);
+  --se-radius: var(--radius-sm, 8px);
   position: relative;
   height: 100%;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-family-base, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
   color: var(--se-ink);
 }
 
 .se-name {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--se-ink);
 }
-.se-desc { font-size: 0.82rem; color: var(--se-ink2); line-height: 1.45; }
+.se-desc { font-size: 0.82rem; color: var(--se-muted); line-height: 1.45; }
 .se-badge {
   display: inline-block;
   font-size: 0.62rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--se-accent);
-  border: 1px solid var(--se-accent);
-  border-radius: 99px;
+  border: 1px solid color-mix(in srgb, var(--se-accent) 55%, transparent);
+  border-radius: var(--radius-full, 9999px);
   padding: 0.15em 0.55em;
 }
-.se-clamp1, .se-clamp2, .se-clamp3 {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+.se-clamp1, .se-clamp2, .se-clamp3 { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
 .se-clamp1 { -webkit-line-clamp: 1; }
 .se-clamp2 { -webkit-line-clamp: 2; }
 .se-clamp3 { -webkit-line-clamp: 3; }
@@ -333,17 +325,17 @@ export default defineComponent({
   font-size: 0.76rem;
   line-height: 1;
   padding: 0.55em 0.72em;
-  border-radius: 4px;
+  border-radius: var(--se-radius);
   cursor: pointer;
-  border: 1px solid var(--se-edge);
+  border: 1px solid var(--se-faint);
   background: transparent;
-  color: var(--se-ink2);
+  color: var(--se-muted);
   transition: background 0.15s, color 0.15s, border-color 0.15s;
   white-space: nowrap;
 }
 .se-btn:hover { border-color: var(--se-accent); color: var(--se-accent); }
 .se-btn--accent { border-color: var(--se-accent); color: var(--se-accent); }
-.se-btn--accent:hover { background: var(--se-accent); color: var(--se-inverse); }
+.se-btn--accent:hover { background: var(--se-accent); color: #fff; }
 .se-btn :deep(svg) { width: 14px; height: 14px; }
 
 .se-icon {
@@ -352,13 +344,13 @@ export default defineComponent({
   justify-content: center;
   padding: 0.5em;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: var(--se-radius);
   background: transparent;
   color: var(--se-muted);
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
 }
-.se-icon:hover { color: var(--se-accent); background: color-mix(in srgb, var(--se-accent) 10%, transparent); }
+.se-icon:hover { color: var(--se-accent); background: var(--color-editable-hover, rgba(0, 0, 0, 0.05)); }
 .se-icon--accent { color: var(--se-accent); }
 .se-icon :deep(svg) { width: 14px; height: 14px; }
 
@@ -374,48 +366,32 @@ export default defineComponent({
 }
 .se-edit:hover { color: var(--se-accent); }
 
-/* Card */
-.se-card {
-  height: 100%;
-  background: var(--se-surface);
-  border: 1px solid var(--se-edge);
-  border-radius: 8px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-}
-.se-card__head { display: flex; align-items: center; gap: 10px; }
+/* Layouts — the outer surface/border come from the tile shell */
+.se-card { height: 100%; padding: var(--spacing-md, 16px); display: flex; flex-direction: column; }
+.se-card__head { display: flex; align-items: center; gap: var(--spacing-sm, 8px); }
 .se-card .se-desc { margin-top: 7px; }
-.se-card .se-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 12px; }
+.se-card .se-actions { display: flex; gap: 6px; margin-top: auto; padding-top: var(--spacing-sm, 8px); }
 .se-card .se-actions .se-btn { flex: 1; }
 
-/* Compact (column) */
 .se-compact {
   height: 100%;
-  background: var(--se-surface);
-  border: 1px solid var(--se-edge);
-  border-radius: 8px;
-  padding: 11px 12px;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--spacing-sm, 8px);
   overflow: hidden;
 }
 .se-compact .se-name { font-size: 0.8rem; }
 .se-compact .se-desc { font-size: 0.72rem; margin-top: 2px; }
 .se-actions--icons { display: flex; gap: 2px; margin-left: -6px; }
 
-/* Row */
 .se-row {
   height: 100%;
-  background: var(--se-surface);
-  border: 1px solid var(--se-edge);
-  border-radius: 8px;
-  padding: 10px 12px;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-md, 16px);
   overflow: hidden;
 }
 .se-row__txt { min-width: 0; flex: 1; }
@@ -426,13 +402,10 @@ export default defineComponent({
 /* Config form */
 .se-form {
   height: 100%;
-  background: var(--se-surface);
-  border: 1px solid var(--se-edge);
-  border-radius: 8px;
-  padding: 12px;
+  padding: var(--spacing-md, 16px);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm, 8px);
   overflow: auto;
 }
 .se-field { display: flex; flex-direction: column; gap: 3px; }
@@ -447,10 +420,10 @@ export default defineComponent({
   font: inherit;
   font-size: 0.8rem;
   padding: 0.4em 0.5em;
-  border: 1px solid var(--se-edge);
-  border-radius: 4px;
-  background: #fff;
-  color: var(--se-ink);
+  border: 1px solid var(--color-stroke, var(--se-faint));
+  border-radius: var(--se-radius);
+  background: var(--color-editable-hover, transparent);
+  color: inherit;
   outline: none;
 }
 .se-field input:focus, .se-field select:focus { border-color: var(--se-accent); }
@@ -463,25 +436,19 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 14px;
-  border: 1px dashed var(--se-edge);
-  border-radius: 8px;
+  padding: var(--spacing-md, 16px);
   color: var(--se-muted);
   font-size: 0.8rem;
-  background: var(--se-surface);
 }
-.se-msg--err { color: #a23a3a; border-color: #a23a3a; }
+.se-msg--err { color: var(--destructive-color, #e91e63); }
 .se-skel {
   height: 100%;
-  background: var(--se-surface);
-  border: 1px solid var(--se-edge);
-  border-radius: 8px;
-  padding: 14px;
+  padding: var(--spacing-md, 16px);
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-.se-skel i { display: block; background: #efeae0; border-radius: 4px; height: 12px; animation: se-pulse 1.2s ease-in-out infinite; }
+.se-skel i { display: block; background: var(--se-faint); border-radius: 4px; height: 12px; animation: se-pulse 1.2s ease-in-out infinite; }
 .se-skel i.w1 { width: 55%; height: 14px; }
 .se-skel i.w2 { width: 90%; }
 .se-skel i.w3 { width: 70%; }
@@ -491,14 +458,14 @@ export default defineComponent({
 /* Toast */
 .se-toast {
   position: absolute;
-  left: 8px;
-  right: 8px;
-  bottom: 8px;
+  left: var(--spacing-sm, 8px);
+  right: var(--spacing-sm, 8px);
+  bottom: var(--spacing-sm, 8px);
   padding: 0.45rem 0.7rem;
-  background: var(--se-surface);
-  border: 1px solid var(--se-edge);
-  border-left: 3px solid #4a7a3a;
-  border-radius: 4px;
+  background: var(--color-tile-background, var(--color-content-background, #fff));
+  border: 1px solid var(--color-stroke, var(--se-faint));
+  border-left: 3px solid var(--se-accent);
+  border-radius: var(--se-radius);
   color: var(--se-ink);
   font-size: 0.74rem;
   text-align: center;

@@ -92,9 +92,12 @@ export { skillEmbedDefinition };
   grids app runs on a different origin than the skill-server, that server must send
   permissive CORS headers for these GET routes (the skill-server's own
   `/embed/` widget avoids this by being same-origin).
-- **Styling** matches the approved mockups (paper/ink). To inherit the host grid's
-  theme instead, swap the `--se-*` values in the component's `<style scoped>` for
-  your design tokens.
+- **Styling inherits the host grid's tokens.** The component draws no outer
+  surface/border (the tile shell provides those) and reads grids' own variables —
+  `--tile-text-color` / `--color-text-primary` for text, `--primary-color` for the
+  accent, `--spacing-*`, `--radius-*`, `--font-family-base` / `--font-family-mono`,
+  with `color-mix` for muted tones (the same pattern `TextContent.vue` uses). It
+  follows light/dark automatically and falls back gracefully outside grids.
 - Authoring guidance for any grids tile lives in the `creating-grids-tiles` skill
   on the skill-server.
 ```
