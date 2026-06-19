@@ -87,6 +87,42 @@ body{margin:0;background:var(--surface-page);color:var(--ink-primary);
 .t-badge{display:inline-block;font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;
   color:var(--accent-mark);border:1px solid var(--accent-mark);border-radius:99px;padding:.15em .55em;}
 
+/* ============================================================
+   Picked & refined — #1 Card + #2 Compact (no avatar)
+   ============================================================ */
+.section-label{font-family:var(--font-display);font-size:1.2rem;font-weight:600;margin:0 0 4px;}
+.section-note{margin:0 0 22px;color:var(--ink-muted);font-size:.85rem;max-width:64ch;}
+.frames{display:flex;flex-wrap:wrap;gap:30px;align-items:flex-start;
+  margin-bottom:44px;padding-bottom:40px;border-bottom:1px solid var(--surface-edge);}
+.frame{display:flex;flex-direction:column;gap:12px;}
+.frame__cap{display:flex;align-items:baseline;gap:8px;}
+.frame__cap b{font-family:var(--font-display);font-size:.98rem;font-weight:600;}
+.frame__size{font-family:var(--font-mono);font-size:.68rem;color:var(--ink-muted);
+  border:1px solid var(--surface-edge);border-radius:var(--radius-edge);padding:.1em .45em;}
+.cell{outline:1px dashed var(--surface-edge);outline-offset:7px;}
+
+.clamp1{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.clamp3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+
+.r-card{background:var(--surface-raised);border:1px solid var(--surface-edge);border-radius:8px;
+  box-shadow:var(--shadow-sheet);padding:14px;display:flex;flex-direction:column;}
+.r-card__head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.r-card__head .t-name{font-size:.88rem;}
+.r-card .t-desc{margin-top:7px;}
+.r-card__actions{display:flex;gap:6px;margin-top:auto;padding-top:12px;}
+.r-card__actions .btn{flex:1;}
+
+.r-compact{background:var(--surface-raised);border:1px solid var(--surface-edge);border-radius:8px;
+  box-shadow:var(--shadow-sheet);padding:11px 12px;display:flex;flex-direction:column;
+  justify-content:space-between;gap:8px;overflow:hidden;}
+.r-compact .t-name{font-size:.8rem;}
+.r-compact .t-desc{font-size:.72rem;margin-top:2px;line-height:1.4;}
+.r-compact__actions{display:flex;gap:2px;margin-left:-6px;}
+.r-compact--row{flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;}
+.r-compact--row .r-compact__txt{min-width:0;flex:1;}
+.r-compact--row .r-compact__actions{margin-left:0;flex:none;}
+
 /* ---------- 01 Card (classic) ---------- */
 .c01{background:var(--surface-raised);border:1px solid var(--surface-edge);border-radius:8px;
   box-shadow:var(--shadow-sheet);padding:16px;display:flex;flex-direction:column;gap:10px;}
@@ -96,9 +132,7 @@ body{margin:0;background:var(--surface-page);color:var(--ink-primary);
 
 /* ---------- 02 Compact row ---------- */
 .c02{background:var(--surface-raised);border:1px solid var(--surface-edge);border-radius:99px;
-  box-shadow:var(--shadow-sheet);padding:8px 10px 8px 8px;display:flex;align-items:center;gap:12px;}
-.c02__avatar{width:40px;height:40px;border-radius:50%;flex:none;background:color-mix(in srgb,var(--accent-mark) 16%,var(--surface-sunken));
-  color:var(--accent-mark);font-family:var(--font-display);font-weight:600;display:flex;align-items:center;justify-content:center;}
+  box-shadow:var(--shadow-sheet);padding:8px 12px;display:flex;align-items:center;gap:12px;}
 .c02__txt{min-width:0;flex:1;}
 .c02__txt .t-name{font-size:.82rem;}
 .c02__txt .t-desc{font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -223,6 +257,82 @@ body{margin:0;background:var(--surface-page);color:var(--ink-primary);
     </div>
   </header>
 
+  <h2 class="section-label">Your picks — refined</h2>
+  <p class="section-note">#1 <strong>Card</strong> as the default tile (2×1, scales up to 2×2),
+     and #2 <strong>Compact</strong> stripped down — name + description + actions, no avatar
+     (1×1, scales out to 2×1). Dashed outline marks the grid-cell footprint.</p>
+  <div class="frames">
+
+    <!-- Card · 2×1 default -->
+    <div class="frame">
+      <div class="frame__cap"><b>Card — default</b><span class="frame__size">grid 2×1</span></div>
+      <div class="r-card cell" style="width:330px;height:138px">
+        <div class="r-card__head">
+          <span class="t-name">copywriting-eos</span>
+          <span class="t-badge">writing</span>
+        </div>
+        <div class="t-desc clamp1">Copy critique using The Elements of Style by Strunk &amp; White.</div>
+        <div class="r-card__actions">
+          <button class="btn" data-act="copy"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg>Copy</button>
+          <a class="btn" data-act="open" href="#"><svg class="ic"><use href="#ic-open"/></svg>Open</a>
+          <button class="btn btn--accent" data-act="mcp"><svg class="ic"><use href="#ic-mcp"/></svg>MCP</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card · 2×2 bigger -->
+    <div class="frame">
+      <div class="frame__cap"><b>Card — bigger</b><span class="frame__size">grid 2×2</span></div>
+      <div class="r-card cell" style="width:330px;height:300px">
+        <div class="r-card__head">
+          <span class="t-name">copywriting-eos</span>
+          <span class="t-badge">writing</span>
+        </div>
+        <div class="t-desc clamp3">Copy critique using The Elements of Style by Strunk &amp; White — omit needless words, prefer the active voice, and keep related words together.</div>
+        <div class="r-card__actions">
+          <button class="btn" data-act="copy"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg>Copy</button>
+          <a class="btn" data-act="open" href="#"><svg class="ic"><use href="#ic-open"/></svg>Open</a>
+          <button class="btn btn--accent" data-act="mcp"><svg class="ic"><use href="#ic-mcp"/></svg>MCP</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compact · 1×1 no avatar -->
+    <div class="frame">
+      <div class="frame__cap"><b>Compact — no avatar</b><span class="frame__size">grid 1×1</span></div>
+      <div class="r-compact cell" style="width:150px;height:150px">
+        <div class="r-compact__txt">
+          <div class="t-name clamp1">copywriting-eos</div>
+          <div class="t-desc clamp2">Copy critique via Strunk &amp; White.</div>
+        </div>
+        <div class="r-compact__actions">
+          <button class="btn btn--ghost btn--icon" data-act="copy" title="Copy text"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg></button>
+          <a class="btn btn--ghost btn--icon" data-act="open" href="#" title="Open"><svg class="ic"><use href="#ic-open"/></svg></a>
+          <button class="btn btn--ghost btn--icon" data-act="mcp" title="MCP" style="color:var(--accent-mark)"><svg class="ic"><use href="#ic-mcp"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compact · 2×1 wide -->
+    <div class="frame">
+      <div class="frame__cap"><b>Compact — wide</b><span class="frame__size">grid 2×1</span></div>
+      <div class="r-compact r-compact--row cell" style="width:330px;height:118px">
+        <div class="r-compact__txt">
+          <div class="t-name clamp1">copywriting-eos</div>
+          <div class="t-desc clamp2">Copy critique using The Elements of Style by Strunk &amp; White.</div>
+        </div>
+        <div class="r-compact__actions">
+          <button class="btn btn--ghost btn--icon" data-act="copy" title="Copy text"><svg class="ic"><use href="#ic-copy"/></svg><svg class="ic ic-check"><use href="#ic-check"/></svg></button>
+          <a class="btn btn--ghost btn--icon" data-act="open" href="#" title="Open"><svg class="ic"><use href="#ic-open"/></svg></a>
+          <button class="btn btn--ghost btn--icon" data-act="mcp" title="MCP" style="color:var(--accent-mark)"><svg class="ic"><use href="#ic-mcp"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <h2 class="section-label">All ten concepts</h2>
+  <p class="section-note">The original exploration, for reference.</p>
   <div class="gallery">
 
     <!-- 01 -->
@@ -246,10 +356,9 @@ body{margin:0;background:var(--surface-page);color:var(--ink-primary);
     <!-- 02 -->
     <section class="stage">
       <div class="stage__cap"><span class="stage__num">02</span><span class="stage__title">Compact row</span><span class="stage__size">grid 4×1</span></div>
-      <p class="stage__blurb">Link-in-bio pill. Initial avatar, icon-only actions for tight rows.</p>
+      <p class="stage__blurb">Link-in-bio pill — name + description + icon actions, no avatar.</p>
       <div class="stage__canvas">
         <div class="tile c02" style="max-width:300px">
-          <div class="c02__avatar">C</div>
           <div class="c02__txt">
             <div class="t-name">copywriting-eos</div>
             <div class="t-desc">Copy critique via Strunk &amp; White</div>

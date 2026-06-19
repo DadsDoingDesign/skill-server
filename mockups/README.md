@@ -15,6 +15,17 @@ The buttons are wired and functional in the demo (with a local clipboard fallbac
 for `file://`), and a Light/Dark toggle previews both themes. Styling uses the
 skill-server "paper/ink" design tokens from `public/styles.css`.
 
+## Picked direction
+
+A **"Your picks — refined"** section at the top of the file shows the chosen
+direction at real grid footprints (dashed outline = the grid cell):
+
+- **Card (#1)** as the default tile — `2×1`, scaling up to `2×2`.
+- **Compact (#2)** stripped to name + description + icon actions, **no avatar** —
+  `1×1`, scaling out to `2×1`.
+
+The full 10-concept gallery remains below for reference.
+
 ## The 10 concepts
 
 | # | Name | Grid | Feel |
