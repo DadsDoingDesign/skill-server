@@ -102,7 +102,8 @@ textarea{min-height:96px;line-height:1.5;}
       <div class="field">
         <label>Layout</label>
         <div class="seg" id="variant">
-          <button data-v="card" aria-pressed="true">Card</button>
+          <button data-v="auto" aria-pressed="true">Auto</button>
+          <button data-v="card" aria-pressed="false">Card</button>
           <button data-v="compact" aria-pressed="false">Compact</button>
           <button data-v="row" aria-pressed="false">Row</button>
         </div>
@@ -153,9 +154,11 @@ textarea{min-height:96px;line-height:1.5;}
         <div class="url" id="url"></div>
       </div>
 
-      <p class="note">Tip: <code>allow="clipboard-write"</code> lets the Copy/MCP buttons work when the widget is
-        embedded cross-origin. Embedding from a different domain than this server requires CORS on
-        <code>/api/skills</code> — hosting the widget on this server (the default) avoids that.</p>
+      <p class="note">The widget reflows between card / compact / row as you resize the tile, and it's
+        transparent so your tile background shows through — choose <strong>Dark</strong> for a dark grid
+        (and optionally an accent to match). <code>allow="clipboard-write"</code> lets the Copy/MCP buttons
+        work cross-origin. Embedding from a different domain than this server needs CORS on
+        <code>/api/skills</code>; hosting the widget on this server (the default) avoids that.</p>
     </div>
   </div>
 </div>
@@ -165,9 +168,9 @@ textarea{min-height:96px;line-height:1.5;}
 const ORIGIN = location.origin;
 const WIDGET = `${ORIGIN}/embed/skill-widget.html`;
 const SIZES = { "1x1":[170,170], "2x1":[340,150], "2x2":[340,320], "3x1":[500,150] };
-const DEFAULT_SIZE = { card:"2x1", compact:"1x1", row:"2x1" };
+const DEFAULT_SIZE = { auto:"2x2", card:"2x1", compact:"1x1", row:"2x1" };
 
-const state = { skill:"", variant:"card", size:"2x1", theme:"auto", accent:null };
+const state = { skill:"", variant:"auto", size:"2x2", theme:"auto", accent:null };
 
 function seg(id, key, after){
   const box = document.getElementById(id);
@@ -214,6 +217,12 @@ function update(){
   pv.src = widgetUrl();
   document.getElementById("snippet").value = snippet();
   document.getElementById("url").textContent = widgetUrl();
+  // Preview on a solid tile-like background so the transparent widget reads correctly.
+  const stage = document.querySelector(".stage");
+  if (stage) {
+    stage.style.backgroundImage = "none";
+    stage.style.background = state.theme === "light" ? "#ece9e2" : "#0d0d0d";
+  }
 }
 
 // copy buttons

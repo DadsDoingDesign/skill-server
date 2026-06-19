@@ -121,22 +121,29 @@ with working **Copy** (full `SKILL.md`), **Open** (skill page), and **MCP** (cop
 `GET /api/skills/:name`, so it stays in sync automatically.
 
 - **Builder** — open `/embed/` in the UI (or the `</>` action on any skill row). Pick a
-  skill, layout (`card` / `compact` / `row`), size, and theme, then copy the ready
+  skill, layout (`auto` / `card` / `compact` / `row`), size, and theme, then copy the ready
   `<iframe>` snippet.
 - **Widget** — `/embed/skill-widget.html?skill=<name>` is the embeddable page. Params:
-  `skill` (required), `variant` (`card`|`compact`|`row`), `theme` (`auto`|`light`|`dark`),
-  `accent` (hex), `server` (defaults to the widget's own origin).
+  `skill` (required), `variant` (`auto`|`card`|`compact`|`row`, default `auto`),
+  `theme` (`auto`|`light`|`dark`), `accent` (hex), `server` (defaults to the widget's own origin).
 
 ```html
-<iframe src="https://<your-deployment>/embed/skill-widget.html?skill=my-skill&variant=card&theme=auto"
-        width="340" height="150" frameborder="0" allow="clipboard-write"
+<iframe src="https://<your-deployment>/embed/skill-widget.html?skill=my-skill&variant=auto&theme=dark"
+        width="340" height="320" frameborder="0" allow="clipboard-write"
         style="border:0;border-radius:8px"></iframe>
 ```
 
-Hosting the widget on this server (the default) means it fetches the API **same-origin**,
-so no CORS is needed even when the iframe is placed on another domain. `allow="clipboard-write"`
-keeps the Copy/MCP buttons working in cross-origin frames. Static design mockups of the
-widget concepts live in [`mockups/`](mockups/).
+With `variant: auto` the widget watches its own size and **reflows** between
+card / compact / row — so resizing the host tile changes the layout. It renders on a
+**transparent** background so the host tile shows through (use `theme=dark` on dark
+surfaces, and `accent` to match the host). The card layout shows a faint document graphic.
+
+Because the widget is served by this server, its API fetch is **same-origin** — so **no
+CORS is needed** even when the iframe is placed on another domain (e.g. a hosted Grids
+instance). `allow="clipboard-write"` helps the Copy/MCP buttons in cross-origin frames
+(there's an `execCommand` fallback otherwise). Static design mockups live in
+[`mockups/`](mockups/); a native (non-iframe) tile for self-hosted Grids forks is in
+[`grids-tile/`](grids-tile/).
 
 ## Skill format
 
