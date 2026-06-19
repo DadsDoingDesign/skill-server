@@ -223,6 +223,7 @@ body { -webkit-font-smoothing: antialiased; }
   opacity: 1;
 }
 .skill-download,
+.skill-embed,
 .skill-copy {
   display: flex;
   align-items: center;
@@ -238,6 +239,7 @@ body { -webkit-font-smoothing: antialiased; }
   transition: opacity 0.15s;
 }
 .skill-download:hover,
+.skill-embed:hover,
 .skill-copy:hover {
   opacity: 0.7;
 }

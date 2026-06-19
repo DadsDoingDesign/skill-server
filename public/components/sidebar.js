@@ -60,16 +60,6 @@ function itemHtml(s, active) {
         <span class="block text-ink-muted text-xs truncate" data-desc></span>
       </a>
       <div class="skill-actions">
-        <a href="/embed/?skill=${encodeURIComponent(s.name)}"
-           target="_blank" rel="noopener"
-           title="Embed ${escapeAttr(s.name)}"
-           class="skill-copy"
-           onclick="event.stopPropagation()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="16 18 22 12 16 6"/>
-            <polyline points="8 6 2 12 8 18"/>
-          </svg>
-        </a>
         <button class="skill-copy" title="Copy skill contents" data-skill="${escapeAttr(s.name)}" onclick="event.stopPropagation(); event.preventDefault(); copySkill(this)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-copy">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
@@ -79,6 +69,16 @@ function itemHtml(s, active) {
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </button>
+        <a href="/embed/?skill=${encodeURIComponent(s.name)}"
+           target="_blank" rel="noopener"
+           title="Embed ${escapeAttr(s.name)}"
+           class="skill-embed"
+           onclick="event.stopPropagation()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+        </a>
         <a href="/api/skills/${encodeURIComponent(s.name)}/export"
            download="${escapeAttr(s.name)}.zip"
            title="Download ${escapeAttr(s.name)}"

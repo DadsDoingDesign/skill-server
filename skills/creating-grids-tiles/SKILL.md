@@ -182,12 +182,18 @@ block for Copy/Open so they also surface in the host toolbar.
 ```ts
 export enum ContentType { SKILL_EMBED = "skill_embed" }
 
+export type SkillEmbedVariant = "card" | "compact" | "row";
+
 export interface SkillEmbedContent extends TileContent {
   type: ContentType.SKILL_EMBED;
-  serverUrl: string;   // e.g. https://skills.example.com
-  skillName: string;   // e.g. copywriting-eos
-  description: string;
-  variant?: string;    // visual concept id, see mockups/skill-embed-widget.html
+  serverUrl: string;          // e.g. https://skills.example.com
+  skillName: string;          // e.g. copywriting-eos
+  variant: SkillEmbedVariant; // visual layout, see mockups/skill-embed-widget.html
+  cachedName?: string;        // cached for instant render; refreshed on mount
+  cachedDescription?: string;
+  cachedCategory?: string;
+  lastSyncedAt?: number;
+  backgroundColor?: string;
 }
 ```
 
@@ -207,31 +213,33 @@ export const skillEmbedDefinition: TileDefinition<SkillEmbedContent> = {
     variant: d?.variant || "card",
   }),
   validate: (c) => c.skillName.trim().length > 0 && c.serverUrl.trim().length > 0,
-  capabilities: { caption: true, border: true, tileLink: false, duplicate: true, resizable: true },
+  capabilities: { caption: false, border: true, duplicate: true, resizable: true },
   defaultSize: { w: 2, h: 2 },
   actions: {
-    // Copy fetches the raw SKILL.md and writes it to the clipboard
-    copyContent: async (c) => {
-      const res = await fetch(`${c.serverUrl}/api/skills/${encodeURIComponent(c.skillName)}`);
-      const skill = await res.json();
-      return skill.raw || skill.body || "";
-    },
-    // Open the skill's page on the server UI
+    // copyContent is SYNCHRONOUS in the grids contract — it cannot fetch.
+    // The component fetches the raw SKILL.md and stashes it in a module-level
+    // cache; copyContent reads that cache back (null until first load).
+    copyContent: (c) => rawCache.get(`${c.serverUrl}::${c.skillName}`) || null,
     externalUrl: (c) => `${c.serverUrl}/#/skill/${encodeURIComponent(c.skillName)}`,
   },
 };
 ```
 
+> Gotcha: `actions.copyContent: (content) => string | null` is **synchronous**.
+> Any remote data must be fetched in the component, cached (e.g. a module `Map`),
+> and read back here — don't make `copyContent` async.
+
 The Vue component renders one of the visual variants and wires the three buttons:
 
-- **Copy** → `navigator.clipboard.writeText(await definition.actions.copyContent(content))`
-- **Open** → anchor to `actions.externalUrl(content)` (`target="_blank" rel="noopener"`)
-- **MCP** → copy `claude mcp add --transport http skills ${serverUrl}/mcp` (or the bare
-  `${serverUrl}/mcp` endpoint), then toast confirmation.
+- **Copy** → fetch `GET {serverUrl}/api/skills/{skillName}` once, cache the `raw`,
+  `navigator.clipboard.writeText(raw)` (with an `execCommand` fallback for
+  cross-origin frames).
+- **Open** → `window.open(actions.externalUrl(content), "_blank", "noopener")`.
+- **MCP** → copy `claude mcp add --transport http skills ${serverUrl}/mcp`, then toast.
 
-Ten ready-to-port visual concepts for this tile live in
-`mockups/skill-embed-widget.html` (open in a browser). Each is sized to a grids cell
-footprint, uses the skill-server "paper/ink" tokens, and keeps the same three actions.
+A complete, working implementation of this tile (definition + Vue component +
+install steps) lives in [`grids-tile/`](../../grids-tile/). Ten visual concepts
+for the same tile live in `mockups/skill-embed-widget.html` (open in a browser).
 
 ## Checklist
 
