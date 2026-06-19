@@ -2,16 +2,11 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import AdmZip from "adm-zip";
 import matter from "gray-matter";
-import { randomUUID } from "node:crypto";
 import { assertSafeName, NAME_RE } from "./shared.js";
 
 const SKILLS_DIR = process.env.SKILLS_DIR
   ? path.resolve(process.env.SKILLS_DIR)
   : path.resolve(process.cwd(), "skills");
-
-const ASSETS_DIR = process.env.ASSETS_DIR
-  ? path.resolve(process.env.ASSETS_DIR)
-  : path.resolve(SKILLS_DIR, "..", "assets");
 
 export function describe() {
   return `fs:${SKILLS_DIR}`;
@@ -32,30 +27,6 @@ async function exists(p) {
     return true;
   } catch {
     return false;
-  }
-}
-
-const ASSET_RE = /^[A-Za-z0-9._-]+$/;
-
-export async function saveAsset(buffer, ext) {
-  await fs.mkdir(ASSETS_DIR, { recursive: true });
-  const name = `${randomUUID()}${ext}`;
-  await fs.writeFile(path.join(ASSETS_DIR, name), buffer);
-  return `/api/assets/${name}`;
-}
-
-export async function getAsset(name) {
-  if (!ASSET_RE.test(name) || name.includes("..")) {
-    const err = new Error("Bad asset name");
-    err.status = 400;
-    throw err;
-  }
-  try {
-    return await fs.readFile(path.join(ASSETS_DIR, name));
-  } catch {
-    const err = new Error("Asset not found");
-    err.status = 404;
-    throw err;
   }
 }
 

@@ -144,37 +144,6 @@ textarea{white-space:pre-wrap;word-break:break-all;}
           </label>
         </div>
       </div>
-
-      <div class="field">
-        <label>Background</label>
-        <div class="seg" id="bgmode">
-          <button data-b="doc" aria-pressed="true">Document</button>
-          <button data-b="none" aria-pressed="false">None</button>
-          <button data-b="custom" aria-pressed="false">Custom</button>
-        </div>
-      </div>
-      <div id="bgcustom" style="display:none;flex-direction:column;gap:14px">
-        <div class="field">
-          <label>Upload image / SVG</label>
-          <input type="file" id="bgfile" accept="image/*,.svg,image/svg+xml" />
-        </div>
-        <div class="field">
-          <label>…or paste an image URL</label>
-          <input type="text" id="bgurl" placeholder="https://…/logo.svg" />
-        </div>
-        <div class="field">
-          <label>Fit</label>
-          <div class="seg" id="bgfit">
-            <button data-f="contain" aria-pressed="true">Contain</button>
-            <button data-f="cover" aria-pressed="false">Cover</button>
-          </div>
-        </div>
-        <div class="field">
-          <label>Opacity <span id="bgopval" style="font-weight:400;text-transform:none;letter-spacing:0">100%</span></label>
-          <input type="range" id="bgopacity" min="0" max="100" value="100" />
-        </div>
-        <p class="note" id="bgwarn" style="display:none;color:var(--feedback-negative)"></p>
-      </div>
     </div>
 
     <!-- Preview + output -->
@@ -211,8 +180,7 @@ const WIDGET = `${ORIGIN}/embed/skill-widget.html`;
 const SIZES = { "1x1":[170,170], "2x1":[340,150], "2x2":[340,320], "3x1":[500,150] };
 const DEFAULT_SIZE = { auto:"2x2", card:"2x1", compact:"1x1", row:"2x1", micro:"1x1" };
 
-const state = { skill:"", variant:"auto", size:"2x2", theme:"auto", accent:null, primary:"copy",
-                bgMode:"doc", bgSrc:null, bgFit:"contain", bgOpacity:1 };
+const state = { skill:"", variant:"auto", size:"2x2", theme:"auto", accent:null, primary:"copy" };
 
 function seg(id, key, after){
   const box = document.getElementById(id);
@@ -238,61 +206,6 @@ document.getElementById("skill").addEventListener("change", e => { state.skill =
 document.getElementById("accentOn").addEventListener("change", update);
 document.getElementById("accent").addEventListener("input", update);
 
-// background controls
-function setBgMode(m){
-  state.bgMode = m;
-  setSeg("bgmode", m);
-  document.getElementById("bgcustom").style.display = m === "custom" ? "flex" : "none";
-}
-seg("bgmode", "bgMode", () => setBgMode(state.bgMode));
-seg("bgfit", "bgFit");
-async function uploadAsset(file){
-  const fd = new FormData(); fd.append("file", file);
-  const hdr = {};
-  let tok = localStorage.getItem("admin-token");
-  if (tok) hdr["X-Admin-Token"] = tok;
-  let res = await fetch(`${ORIGIN}/api/assets`, { method:"POST", headers: hdr, body: fd });
-  if (res.status === 401) {
-    tok = prompt("Admin token required to upload (set it via the main app's Token button):");
-    if (!tok) throw new Error("Upload needs an admin token");
-    localStorage.setItem("admin-token", tok.trim());
-    hdr["X-Admin-Token"] = tok.trim();
-    res = await fetch(`${ORIGIN}/api/assets`, { method:"POST", headers: hdr, body: fd });
-  }
-  if (!res.ok) {
-    let m = "Upload failed (" + res.status + ")";
-    try { const j = await res.json(); if (j.error) m = j.error; } catch {}
-    throw new Error(m);
-  }
-  return (await res.json()).url;
-}
-document.getElementById("bgfile").addEventListener("change", async (e) => {
-  const f = e.target.files && e.target.files[0];
-  if (!f) return;
-  const warn = document.getElementById("bgwarn");
-  const note = (msg, err) => { if (warn){ warn.style.display="block"; warn.style.color = err ? "var(--feedback-negative)" : "var(--ink-muted)"; warn.textContent = msg; } };
-  try {
-    note("Uploading…", false);
-    state.bgSrc = await uploadAsset(f);
-    setBgMode("custom");
-    if (warn) warn.style.display = "none";
-    update();
-  } catch (err) {
-    note(err.message || "Upload failed", true);
-  }
-});
-document.getElementById("bgurl").addEventListener("input", (e) => {
-  const v = e.target.value.trim();
-  state.bgSrc = v || null;
-  if (v) setBgMode("custom");
-  update();
-});
-document.getElementById("bgopacity").addEventListener("input", (e) => {
-  state.bgOpacity = Number(e.target.value) / 100;
-  document.getElementById("bgopval").textContent = e.target.value + "%";
-  update();
-});
-
 function accentHex(){
   if (!document.getElementById("accentOn").checked) return null;
   return document.getElementById("accent").value;
@@ -302,12 +215,6 @@ function widgetUrl(){
   const p = new URLSearchParams({ skill: state.skill, variant: state.variant, theme: state.theme });
   const a = accentHex(); if (a) p.set("accent", a.replace("#",""));
   if (state.primary && state.primary !== "copy") p.set("primary", state.primary);
-  if (state.bgMode === "none") p.set("bg", "none");
-  else if (state.bgMode === "custom" && state.bgSrc) {
-    p.set("bg", state.bgSrc);
-    p.set("bgfit", state.bgFit);
-    if (state.bgOpacity !== 1) p.set("bgopacity", String(state.bgOpacity));
-  }
   return `${WIDGET}?${p.toString()}`;
 }
 function snippet(){
@@ -327,14 +234,6 @@ function update(){
   if (stage) {
     stage.style.backgroundImage = "none";
     stage.style.background = state.theme === "light" ? "#ece9e2" : "#0d0d0d";
-  }
-  const warn = document.getElementById("bgwarn");
-  if (warn) {
-    const len = widgetUrl().length;
-    if (state.bgMode === "custom" && len > 8000) {
-      warn.style.display = "block";
-      warn.textContent = `This background makes the embed URL ~${Math.round(len / 1000)}k characters — some browsers or Grids may reject it. Try a smaller SVG or paste a hosted image URL.`;
-    } else warn.style.display = "none";
   }
 }
 

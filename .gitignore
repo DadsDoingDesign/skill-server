@@ -9,6 +9,3 @@ build/
 # Skill data is persisted on the host (volume / disk). Don't commit user skills.
 skills/*
 !skills/.gitkeep
-
-# Uploaded embed-widget background images are host data too.
-assets/
