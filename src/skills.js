@@ -26,6 +26,8 @@ export const readSkillFile = (name, relPath) => backend.readSkillFile(name, relP
 export const saveSkill = (name, payload) => backend.saveSkill(name, payload);
 export const deleteSkill = (name) => backend.deleteSkill(name);
 export const exportSkillAsZip = (name) => backend.exportSkillAsZip(name);
+export const saveAsset = (buffer, ext, contentType) => backend.saveAsset(buffer, ext, contentType);
+export const getAsset = (name) => backend.getAsset(name);
 
 export async function exportAllSkillsAsZip() {
   const all = await listSkills();

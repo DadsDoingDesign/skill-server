@@ -124,8 +124,10 @@ with working **Copy** (full `SKILL.md`), **Open** (skill page), and **MCP** (cop
   skill, layout (`auto` / `card` / `compact` / `row`), size, and theme, then copy the ready
   `<iframe>` snippet.
 - **Widget** — `/embed/skill-widget.html?skill=<name>` is the embeddable page. Params:
-  `skill` (required), `variant` (`auto`|`card`|`compact`|`row`, default `auto`),
-  `theme` (`auto`|`light`|`dark`), `accent` (hex), `server` (defaults to the widget's own origin).
+  `skill` (required), `variant` (`auto`|`card`|`compact`|`row`|`micro`, default `auto`),
+  `theme` (`auto`|`light`|`dark`), `accent` (hex), `primary` (`copy`|`open`|`mcp` — the single
+  action used at 1×1), `bg` (image URL, an uploaded `/api/assets/…`, or `none`),
+  `bgfit` (`contain`|`cover`), `bgopacity`, `server` (defaults to the widget's own origin).
 
 ```html
 <iframe src="https://<your-deployment>/embed/skill-widget.html?skill=my-skill&variant=auto&theme=dark"
@@ -136,7 +138,10 @@ with working **Copy** (full `SKILL.md`), **Open** (skill page), and **MCP** (cop
 With `variant: auto` the widget watches its own size and **reflows** between
 card / compact / row — so resizing the host tile changes the layout. It renders on a
 **transparent** background so the host tile shows through (use `theme=dark` on dark
-surfaces, and `accent` to match the host). The card layout shows a faint document graphic.
+surfaces, and `accent` to match the host). The card layout shows a faint document graphic;
+at **1×1** it collapses to a "mini" app-icon with a single action (`primary`). The builder's
+**Background** control can upload an image/SVG (stored at `/api/assets/…` and admin-gated) or
+take a pasted URL in place of the built-in graphic.
 
 Because the widget is served by this server, its API fetch is **same-origin** — so **no
 CORS is needed** even when the iframe is placed on another domain (e.g. a hosted Grids

@@ -107,6 +107,15 @@ textarea{white-space:pre-wrap;word-break:break-all;}
           <button data-v="card" aria-pressed="false">Card</button>
           <button data-v="compact" aria-pressed="false">Compact</button>
           <button data-v="row" aria-pressed="false">Row</button>
+          <button data-v="micro" aria-pressed="false">Mini</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>1×1 action</label>
+        <div class="seg" id="primary">
+          <button data-p="copy" aria-pressed="true">Copy</button>
+          <button data-p="open" aria-pressed="false">Open</button>
+          <button data-p="mcp" aria-pressed="false">MCP</button>
         </div>
       </div>
       <div class="field">
@@ -200,9 +209,9 @@ textarea{white-space:pre-wrap;word-break:break-all;}
 const ORIGIN = location.origin;
 const WIDGET = `${ORIGIN}/embed/skill-widget.html`;
 const SIZES = { "1x1":[170,170], "2x1":[340,150], "2x2":[340,320], "3x1":[500,150] };
-const DEFAULT_SIZE = { auto:"2x2", card:"2x1", compact:"1x1", row:"2x1" };
+const DEFAULT_SIZE = { auto:"2x2", card:"2x1", compact:"1x1", row:"2x1", micro:"1x1" };
 
-const state = { skill:"", variant:"auto", size:"2x2", theme:"auto", accent:null,
+const state = { skill:"", variant:"auto", size:"2x2", theme:"auto", accent:null, primary:"copy",
                 bgMode:"doc", bgSrc:null, bgFit:"contain", bgOpacity:1 };
 
 function seg(id, key, after){
@@ -223,6 +232,7 @@ function setSeg(id, val){
 seg("variant","variant", () => { state.size = DEFAULT_SIZE[state.variant]; setSeg("size", state.size); });
 seg("size","size");
 seg("theme","theme");
+seg("primary","primary");
 
 document.getElementById("skill").addEventListener("change", e => { state.skill = e.target.value; update(); });
 document.getElementById("accentOn").addEventListener("change", update);
@@ -236,19 +246,40 @@ function setBgMode(m){
 }
 seg("bgmode", "bgMode", () => setBgMode(state.bgMode));
 seg("bgfit", "bgFit");
-document.getElementById("bgfile").addEventListener("change", (e) => {
+async function uploadAsset(file){
+  const fd = new FormData(); fd.append("file", file);
+  const hdr = {};
+  let tok = localStorage.getItem("admin-token");
+  if (tok) hdr["X-Admin-Token"] = tok;
+  let res = await fetch(`${ORIGIN}/api/assets`, { method:"POST", headers: hdr, body: fd });
+  if (res.status === 401) {
+    tok = prompt("Admin token required to upload (set it via the main app's Token button):");
+    if (!tok) throw new Error("Upload needs an admin token");
+    localStorage.setItem("admin-token", tok.trim());
+    hdr["X-Admin-Token"] = tok.trim();
+    res = await fetch(`${ORIGIN}/api/assets`, { method:"POST", headers: hdr, body: fd });
+  }
+  if (!res.ok) {
+    let m = "Upload failed (" + res.status + ")";
+    try { const j = await res.json(); if (j.error) m = j.error; } catch {}
+    throw new Error(m);
+  }
+  return (await res.json()).url;
+}
+document.getElementById("bgfile").addEventListener("change", async (e) => {
   const f = e.target.files && e.target.files[0];
   if (!f) return;
-  const isSvg = f.type === "image/svg+xml" || /\.svg$/i.test(f.name);
-  const reader = new FileReader();
-  reader.onload = () => {
-    state.bgSrc = isSvg
-      ? "data:image/svg+xml;utf8," + encodeURIComponent(String(reader.result))
-      : String(reader.result);
+  const warn = document.getElementById("bgwarn");
+  const note = (msg, err) => { if (warn){ warn.style.display="block"; warn.style.color = err ? "var(--feedback-negative)" : "var(--ink-muted)"; warn.textContent = msg; } };
+  try {
+    note("Uploading…", false);
+    state.bgSrc = await uploadAsset(f);
     setBgMode("custom");
+    if (warn) warn.style.display = "none";
     update();
-  };
-  if (isSvg) reader.readAsText(f); else reader.readAsDataURL(f);
+  } catch (err) {
+    note(err.message || "Upload failed", true);
+  }
 });
 document.getElementById("bgurl").addEventListener("input", (e) => {
   const v = e.target.value.trim();
@@ -270,6 +301,7 @@ function accentHex(){
 function widgetUrl(){
   const p = new URLSearchParams({ skill: state.skill, variant: state.variant, theme: state.theme });
   const a = accentHex(); if (a) p.set("accent", a.replace("#",""));
+  if (state.primary && state.primary !== "copy") p.set("primary", state.primary);
   if (state.bgMode === "none") p.set("bg", "none");
   else if (state.bgMode === "custom" && state.bgSrc) {
     p.set("bg", state.bgSrc);

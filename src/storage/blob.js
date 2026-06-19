@@ -6,6 +6,7 @@ import {
   del as blobDel,
   get as blobGet,
 } from "@vercel/blob";
+import { randomUUID } from "node:crypto";
 import { assertSafeName, assertSafeRelPath, NAME_RE } from "./shared.js";
 
 // Vercel Blob layout:
@@ -16,6 +17,7 @@ import { assertSafeName, assertSafeRelPath, NAME_RE } from "./shared.js";
 // Pathnames are case-sensitive and globally unique within the store.
 
 const PREFIX = "skills/";
+const ASSET_PREFIX = "assets/";
 
 const token = process.env.BLOB_READ_WRITE_TOKEN;
 
@@ -215,4 +217,31 @@ export async function exportSkillAsZip(name) {
     zip.addFile(`${name}/${rel}`, data);
   }
   return zip.toBuffer();
+}
+
+const ASSET_RE = /^[A-Za-z0-9._-]+$/;
+
+export async function saveAsset(buffer, ext, contentType) {
+  await ensureReady();
+  const name = `${randomUUID()}${ext}`;
+  await blobPut(`${ASSET_PREFIX}${name}`, buffer, opts({ contentType }));
+  return `/api/assets/${name}`;
+}
+
+export async function getAsset(name) {
+  await ensureReady();
+  if (!ASSET_RE.test(name) || name.includes("..")) {
+    const err = new Error("Bad asset name");
+    err.status = 400;
+    throw err;
+  }
+  const key = `${ASSET_PREFIX}${name}`;
+  const blobs = await listAll(key);
+  const blob = blobs.find((b) => b.pathname === key);
+  if (!blob) {
+    const err = new Error("Asset not found");
+    err.status = 404;
+    throw err;
+  }
+  return await fetchBlobByUrl(blob.url);
 }

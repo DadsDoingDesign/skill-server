@@ -13,7 +13,28 @@ import {
   exportAllSkillsAsZip,
   searchSkills,
   describeBackend,
+  saveAsset,
+  getAsset,
 } from "./skills.js";
+
+// Supported background-image asset types for the embed widget.
+const ASSET_MIME_TO_EXT = {
+  "image/png": ".png",
+  "image/jpeg": ".jpg",
+  "image/gif": ".gif",
+  "image/webp": ".webp",
+  "image/avif": ".avif",
+  "image/svg+xml": ".svg",
+};
+const ASSET_EXT_TO_MIME = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".webp": "image/webp",
+  ".avif": "image/avif",
+  ".svg": "image/svg+xml",
+};
 import { handleMcpRequest } from "./mcp.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -164,6 +185,40 @@ export function buildApp() {
       }
     }
   );
+
+  // Background images for the embed widget. Upload is admin-gated; reads are public.
+  app.post("/api/assets", requireAdmin, upload.single("file"), async (req, res, next) => {
+    try {
+      if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+      let ext = ASSET_MIME_TO_EXT[req.file.mimetype];
+      if (!ext) {
+        const dot = req.file.originalname.lastIndexOf(".");
+        const oext = dot >= 0 ? req.file.originalname.slice(dot).toLowerCase() : "";
+        if (ASSET_EXT_TO_MIME[oext]) ext = oext;
+      }
+      if (!ext) return res.status(415).json({ error: "Unsupported image type" });
+      const url = await saveAsset(req.file.buffer, ext, ASSET_EXT_TO_MIME[ext]);
+      res.status(201).json({ url });
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  app.get("/api/assets/:id", async (req, res, next) => {
+    try {
+      const buf = await getAsset(req.params.id);
+      const dot = req.params.id.lastIndexOf(".");
+      const ext = dot >= 0 ? req.params.id.slice(dot).toLowerCase() : "";
+      res.setHeader("Content-Type", ASSET_EXT_TO_MIME[ext] || "application/octet-stream");
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      // Neutralize any uploaded SVG if it's loaded directly (defense in depth).
+      res.setHeader("Content-Security-Policy", "sandbox; default-src 'none'");
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      res.send(buf);
+    } catch (e) {
+      next(e);
+    }
+  });
 
   app.get("/healthz", (_req, res) => res.json({ ok: true, storage: describeBackend() }));
 

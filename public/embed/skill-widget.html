@@ -78,6 +78,18 @@ body{margin:0;background:transparent;color:var(--ink);font-family:var(--font);
 .w-row__txt .t-desc{font-size:.74rem;margin-top:2px;}
 .w-row .w-icons{margin-left:0;flex:none;}
 
+/* Micro (1x1) — one cute action + name */
+.w-micro{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:8px;padding:8px;text-align:center;overflow:hidden;}
+.w-micro>*{position:relative;z-index:1;}
+.w-micro__app{width:clamp(34px,42%,54px);aspect-ratio:1;border:none;border-radius:14px;cursor:pointer;
+  background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;
+  transition:transform .12s,filter .12s;}
+.w-micro__app:hover{transform:translateY(-1px);filter:brightness(1.07);}
+.w-micro__app:active{transform:scale(.93);}
+.w-micro__glyph{width:54%;height:54%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.w-micro__name{font-size:.72rem;max-width:100%;}
+
 /* States */
 .w-msg{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;
   padding:14px;color:var(--muted);font-size:.8rem;}
@@ -118,6 +130,8 @@ const bg = P.get("bg");                                          // image URL / 
 const bgfit = (P.get("bgfit") || "contain").toLowerCase();      // contain | cover
 const bgopacity = P.get("bgopacity");                           // 0..1
 const DEBUG = P.get("debug") === "1";                           // show a size/layout badge
+const primary = ["copy", "open", "mcp"].includes((P.get("primary") || "").toLowerCase())
+  ? P.get("primary").toLowerCase() : "copy";                    // core action for the 1x1 layout
 
 function applyTheme(){
   let mode = theme;
@@ -158,6 +172,13 @@ function bgEl(allowBuiltin){
   return allowBuiltin ? DOC_BG : "";
 }
 
+const GLYPHS = {
+  copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  open: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
+  mcp:  '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>',
+};
+const PRIMARY_TITLE = { copy: "Copy skill", open: "Open skill", mcp: "Copy MCP command" };
+
 function openUrl(){ return `${server}/#/skill/${encodeURIComponent(DATA?.name || skill)}`; }
 function mcpCmd(){ return `claude mcp add --transport http skills ${server}/mcp`; }
 
@@ -179,7 +200,7 @@ function pickLayout(){
   if (variant !== "auto") return variant;
   const w = window.innerWidth || document.documentElement.clientWidth;
   const h = window.innerHeight || document.documentElement.clientHeight;
-  if (h < 170 && w < 240) return "compact";  // ~1x1
+  if (w < 180 && h < 180) return "micro";    // ~1x1 — one cute action
   if (h < 170) return "row";                 // short & wide (2x1, 3x1)
   if (w < 200) return "compact";             // narrow & tall
   return "card";                             // 2x2+
@@ -191,7 +212,15 @@ function renderLayout(layout){
   const cat  = esc(badgeOv != null ? badgeOv : (DATA.category || ""));
   const badge = cat ? `<span class="t-badge">${cat}</span>` : "";
 
-  if (layout === "compact") {
+  if (layout === "micro") {
+    root.innerHTML = `
+      <div class="w-micro">
+        <button class="w-micro__app" data-act="${primary}" title="${PRIMARY_TITLE[primary]}">
+          <svg class="w-micro__glyph" viewBox="0 0 24 24">${GLYPHS[primary]}</svg>
+        </button>
+        <div class="t-name clamp1 w-micro__name">${name}</div>
+      </div>`;
+  } else if (layout === "compact") {
     root.innerHTML = `
       <div class="w-compact">
         ${bgEl(false)}
@@ -279,7 +308,12 @@ document.addEventListener("click", async (e) => {
   const t = e.target.closest("[data-act]");
   if (!t || !DATA) return;
   const act = t.dataset.act;
-  if (act === "open") return;
+  if (act === "open") {
+    if (t.tagName === "A") return;            // anchor opens natively
+    e.preventDefault();
+    if (openUrl()) window.open(openUrl(), "_blank", "noopener");
+    return;
+  }
   e.preventDefault();
   if (act === "copy") {
     const ok = await copy(DATA.raw || "");
