@@ -113,6 +113,32 @@ function buildServer() {
 // Stateless handler: build a fresh server + transport per request. Works well
 // for read-heavy MCP traffic and avoids per-client session state.
 export async function handleMcpRequest(req, res) {
+  const ua = req.headers["user-agent"] || "-";
+
+  // Stateless mode never sends server-initiated messages, so there is nothing
+  // to stream on GET (or session to DELETE). Without this, the SDK opens an SSE
+  // stream that holds the function open until maxDuration, billed as
+  // provisioned memory. 405 tells clients to skip the stream.
+  if (req.method !== "POST") {
+    console.log(`MCP ${req.method} rejected ua="${ua}"`);
+    res.set("Allow", "POST").status(405).json({
+      jsonrpc: "2.0",
+      error: { code: -32000, message: "Method not allowed." },
+      id: null,
+    });
+    return;
+  }
+
+  // Record who connects, so unknown clients can be identified from the logs.
+  const messages = Array.isArray(req.body) ? req.body : [req.body];
+  for (const msg of messages) {
+    if (msg?.method === "initialize") {
+      console.log(
+        `MCP initialize client=${JSON.stringify(msg.params?.clientInfo)} ua="${ua}"`
+      );
+    }
+  }
+
   try {
     const server = buildServer();
     const transport = new StreamableHTTPServerTransport({
